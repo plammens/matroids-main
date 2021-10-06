@@ -37,9 +37,18 @@ class RealLinearMatroid(Matroid[int]):
 
     def is_independent(self, subset: typing.Set[int]) -> bool:
         # fetch the given columns and check whether the resulting matrix is full-rank
-        columns_subset = self.matrix[:, sorted(subset)]
+        columns_subset = self.get_matrix(subset)
         return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
 
+    def get_matrix(self, subset: typing.Set[int]) -> np.ndarray:
+        """
+        Return the sub-matrix corresponding to the given subset of elements (columns).
+
+        :param subset: Subset of column indices of this matroid's matrix.
+        :return: The sub-matrix corresponding to the given subset,
+             preserving column order.
+        """
+        return self.matrix[:, sorted(subset)]
 
 @dataclasses.dataclass(frozen=True)
 class WeightedRealLinearMatroid(RealLinearMatroid, WeightedMatroid):
