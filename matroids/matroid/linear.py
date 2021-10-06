@@ -11,14 +11,13 @@ class RealLinearMatroid(Matroid[int]):
     A linear matroid for vectors in R^n.
 
     A linear matroid is one that can be represented by a matrix. The ground set E is
-    a set of vectors in a vector space V over a field F. In this case, F is the field
+    the set of column indices of a matrix M over a field F. In this case, F is the field
     of real numbers. The family of independent sets is contains all sets of linearly
-    independent vectors made up from elements of E. The matrix representation is
-    obtained by writing each vector in E as a column.
+    independent columns of M.
 
-    This type of matroid is implemented here by identifying each vector with an integer
-    index, corresponding to its index in the matrix. The matrix is stored as a
-    (read-only) property of the object.
+    This implementation uses 0-based integer indices as the column indices (i.e. the
+    elements of the ground set). The matrix is stored as a (read-only) property of
+    the object.
     """
 
     matrix: np.ndarray  #: matrix of real vectors
