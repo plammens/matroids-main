@@ -1,0 +1,41 @@
+import dataclasses
+import typing
+import numpy as np
+
+from . import Matroid
+
+
+@dataclasses.dataclass(frozen=True)
+class RealLinearMatroid(Matroid[int]):
+    """
+    A linear matroid for vectors in R^n.
+
+    A linear matroid is one that can be represented by a matrix. The ground set E is
+    a set of vectors in a vector space V over a field F. In this case, F is the field
+    of real numbers. The family of independent sets is contains all sets of linearly
+    independent vectors made up from elements of E. The matrix representation is
+    obtained by writing each vector in E as a column.
+
+    This type of matroid is implemented here by identifying each vector with an integer
+    index, corresponding to its index in the matrix. The matrix is stored as a
+    (read-only) property of the object.
+    """
+
+    matrix: np.ndarray  #: matrix of real vectors
+
+    def __post_init__(self):
+        # validate matrix
+        if not self.matrix.ndim == 2:
+            raise ValueError(
+                f"Given array is not a matrix: has {self.matrix.ndim} dimensions"
+            )
+
+    @property
+    def ground_set(self) -> typing.Set[int]:
+        # return the indices of columns in the matrix
+        return set(range(self.matrix.shape[1]))
+
+    def is_independent(self, subset: typing.Set[int]) -> bool:
+        # fetch the given columns and check whether the resulting matrix is full-rank
+        columns_subset = self.matrix[:, sorted(subset)]
+        return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
