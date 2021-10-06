@@ -34,3 +34,17 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         :return: Whether ``subset`` is an independent set in this matroid.
         """
         pass
+
+
+class WeightedMatroid(Matroid[T], metaclass=abc.ABCMeta):
+    """
+    Abstract base class for weighted matroids.
+
+    Extends regular matroids by associating a numerical weight to each element of the
+    ground set.
+    """
+
+    @abc.abstractmethod
+    def get_weight(self, element: T) -> float:
+        """Returns the weight of the given element."""
+        pass

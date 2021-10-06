@@ -2,7 +2,7 @@ import dataclasses
 import typing
 import numpy as np
 
-from . import Matroid
+from . import Matroid, WeightedMatroid
 
 
 @dataclasses.dataclass(frozen=True)
@@ -39,3 +39,28 @@ class RealLinearMatroid(Matroid[int]):
         # fetch the given columns and check whether the resulting matrix is full-rank
         columns_subset = self.matrix[:, sorted(subset)]
         return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
+
+
+@dataclasses.dataclass(frozen=True)
+class WeightedRealLinearMatroid(RealLinearMatroid, WeightedMatroid):
+    weights: np.ndarray  #: vector of weights
+
+    def __init__(self, matrix: np.ndarray, weights: np.ndarray = None):
+        super().__init__(matrix)
+
+        # validate and store weights
+        weights_shape = (matrix.shape[1],)
+        if weights is not None:
+            if weights.shape != weights_shape:
+                raise ValueError(
+                    f"Invalid weights vector: has shape {weights.shape!r},"
+                    f" expected {weights_shape!r}"
+                )
+        else:
+            weights = np.ones(weights_shape, dtype=float)
+
+        # must use setattr manually since this is a frozen dataclass
+        object.__setattr__(self, "weights", weights)
+
+    def get_weight(self, element: int) -> float:
+        return self.weights[element]
