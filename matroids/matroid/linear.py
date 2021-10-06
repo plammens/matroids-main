@@ -56,6 +56,7 @@ class WeightedRealLinearMatroid(RealLinearMatroid, WeightedMatroid):
                     f"Invalid weights vector: has shape {weights.shape!r},"
                     f" expected {weights_shape!r}"
                 )
+            weights = weights.astype(float)
         else:
             weights = np.ones(weights_shape, dtype=float)
 
