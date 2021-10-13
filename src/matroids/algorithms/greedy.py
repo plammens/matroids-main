@@ -14,7 +14,7 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
     # sort elements in descending order of weight
     elements = sorted(matroid.ground_set, key=matroid.get_weight, reverse=True)
 
-    current_set = set()
+    current_set: typing.Set[T] = set()
     for element in elements:
         if matroid.is_independent(current_set | {element}):
             current_set.add(element)

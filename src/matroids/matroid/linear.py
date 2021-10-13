@@ -51,11 +51,11 @@ class RealLinearMatroid(Matroid[int]):
         object.__setattr__(self, "weights", weights)
 
     @property
-    def ground_set(self) -> typing.Set[int]:
+    def ground_set(self) -> typing.FrozenSet[int]:
         # return the indices of columns in the matrix
-        return set(range(self.matrix.shape[1]))
+        return frozenset(range(self.matrix.shape[1]))
 
-    def is_independent(self, subset: typing.Set[int]) -> bool:
+    def is_independent(self, subset: typing.Collection[int]) -> bool:
         # fetch the given columns and check whether the resulting matrix is full-rank
         columns_subset = self.get_matrix(subset)
         return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
@@ -63,7 +63,7 @@ class RealLinearMatroid(Matroid[int]):
     def get_weight(self, element: int) -> float:
         return self.weights[element]
 
-    def get_matrix(self, subset: typing.Set[int]) -> np.ndarray:
+    def get_matrix(self, subset: typing.Collection[int]) -> np.ndarray:
         """
         Return the sub-matrix corresponding to the given subset of elements (columns).
 

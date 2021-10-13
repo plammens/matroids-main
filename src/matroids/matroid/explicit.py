@@ -52,10 +52,10 @@ class ExplicitMatroid(Matroid[typing.Any]):
     del T
 
     @property
-    def ground_set(self) -> typing.Set[typing.Any]:
-        return set(self.elements)
+    def ground_set(self) -> typing.FrozenSet[typing.Any]:
+        return self.elements
 
-    def is_independent(self, subset: typing.Set[typing.Any]) -> bool:
+    def is_independent(self, subset: typing.Collection[typing.Any]) -> bool:
         return frozenset(subset) in self.independent_sets
 
     def get_weight(self, element: typing.Any) -> float:

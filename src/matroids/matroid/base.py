@@ -24,12 +24,12 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def ground_set(self) -> typing.Set[T]:
+    def ground_set(self) -> typing.FrozenSet[T]:
         """Returns the ground set E corresponding to this matroid."""
         pass
 
     @abc.abstractmethod
-    def is_independent(self, subset: typing.Set[T]) -> bool:
+    def is_independent(self, subset: typing.Collection[T]) -> bool:
         """
         Membership function for the collection of independent sets, I.
 
@@ -38,6 +38,7 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         """
         pass
 
+    @abc.abstractmethod
     def get_weight(self, element: T) -> float:
         """
         Returns the weight of the given element.
@@ -49,4 +50,4 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         :param element: Element of the ground set whose weight to get.
         :return: The numeric weight associated to the given element.
         """
-        return 1.
+        return 1.0
