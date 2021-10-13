@@ -2,7 +2,7 @@ import dataclasses
 import typing
 import numpy as np
 
-from . import Matroid
+from .base import Matroid
 
 
 @dataclasses.dataclass(frozen=True)

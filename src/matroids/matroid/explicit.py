@@ -1,7 +1,7 @@
 import dataclasses
 import typing
 
-from matroids.matroid import Matroid
+from .base import Matroid
 from matroids.utils import generate_subsets
 
 
