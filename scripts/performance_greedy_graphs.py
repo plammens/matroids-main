@@ -1,5 +1,5 @@
 """Empirical analysis of the greedy algorithm on real graph datasets."""
-import pickle
+import pathlib
 import tarfile
 
 import matplotlib.pyplot as plt
@@ -16,7 +16,10 @@ rng = np.random.default_rng(seed=2021)
 
 
 # download a graph dataset from the Stanford Large Network Dataset Collection
-path = ensure_downloaded("https://snap.stanford.edu/data/facebook.tar.gz")
+path = ensure_downloaded(
+    "https://snap.stanford.edu/data/facebook.tar.gz",
+    path=pathlib.Path.cwd().joinpath("downloads").joinpath("facebook.tar.gz"),
+)
 tar = tarfile.open(path)
 filenames = [name for name in tar.getnames() if name.endswith("edges")]
 networks = []
@@ -43,8 +46,6 @@ for title, (n_range, factory) in plots.items():
         labels=["greedy"],
         xlabel="number of edges",
     )
-    with open("bench.pkl", "wb") as file:
-        pickle.dump(results, file, protocol=-1)
     results.plot()
     plt.title(title)
     plt.tight_layout()
