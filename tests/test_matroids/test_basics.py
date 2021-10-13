@@ -1,8 +1,27 @@
+import typing
+
+import networkx
 import numpy as np
 
-from matroids.matroid import RealLinearMatroid
+from matroids.matroid import Matroid, RealLinearMatroid
 
 from matroids.algorithms.greedy import maximal_independent_set
+from matroids.matroid.graphical import GraphicalMatroid
+from matroids.utils import generate_subsets
+
+
+def get_independent_sets(matroid: Matroid) -> typing.FrozenSet:
+    """
+    Compute the explicit family of independent sets, I, of the given matroid.
+
+    Note: this function has complexity at least 2^n, where n is the size of the
+    ground set. Only advised for very small instances.
+    """
+    return frozenset(
+        subset
+        for subset in generate_subsets(matroid.ground_set)
+        if matroid.is_independent(subset)
+    )
 
 
 def test_basic_maximal_independent_set():
@@ -18,3 +37,12 @@ def test_basic_maximal_independent_set():
     result = maximal_independent_set(matroid)
     # should have selected 2nd and 3rd columns:
     assert result == {1, 2}
+
+
+def test_graphical_matroid():
+    graph = networkx.complete_graph(3)
+    matroid = GraphicalMatroid(graph)
+    independent_sets = get_independent_sets(matroid)
+    # all and only subsets of edges of size < 3 should form an a acyclic graph
+    assert independent_sets == frozenset(generate_subsets(matroid.ground_set, range(3)))
+
