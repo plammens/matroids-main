@@ -32,6 +32,7 @@ class RealLinearMatroid(Matroid[int]):
             raise ValueError(
                 f"Given array is not a matrix: has {self.matrix.ndim} dimensions"
             )
+        matrix = matrix.astype(float)
 
         # validate and store weights
         weights_shape = (matrix.shape[1],)
