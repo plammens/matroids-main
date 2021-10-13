@@ -17,6 +17,9 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
            X union {y} is also in I.
 
     The type variable T corresponds to the type of the elements of the ground set E.
+
+    Some matroids may assign custom numeric weights to each element of the ground set
+    via the :meth:`get_weight` method.
     """
 
     @property
@@ -35,16 +38,15 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         """
         pass
 
-
-class WeightedMatroid(Matroid[T], metaclass=abc.ABCMeta):
-    """
-    Abstract base class for weighted matroids.
-
-    Extends regular matroids by associating a numerical weight to each element of the
-    ground set.
-    """
-
-    @abc.abstractmethod
     def get_weight(self, element: T) -> float:
-        """Returns the weight of the given element."""
-        pass
+        """
+        Returns the weight of the given element.
+
+        Subclasses should override this if they need to implement the ability to assign
+        custom weights to each element. By default, all elements are assigned
+        unit weight.
+
+        :param element: Element of the ground set whose weight to get.
+        :return: The numeric weight associated to the given element.
+        """
+        return 1.

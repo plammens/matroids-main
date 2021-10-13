@@ -1,10 +1,10 @@
 """The greedy algorithm for finding the maximal independent set of a matroid"""
 import typing
 
-from matroids.matroid import WeightedMatroid, T
+from matroids.matroid import Matroid, T
 
 
-def maximal_independent_set(matroid: WeightedMatroid[T]) -> typing.Set[T]:
+def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
     """
     Use the greedy algorithm to find the maximal independent set of a matroid.
 

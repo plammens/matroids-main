@@ -2,7 +2,7 @@ import dataclasses
 import typing
 import numpy as np
 
-from . import Matroid, WeightedMatroid
+from . import Matroid
 
 
 @dataclasses.dataclass(frozen=True)
@@ -18,43 +18,20 @@ class RealLinearMatroid(Matroid[int]):
     This implementation uses 0-based integer indices as the column indices (i.e. the
     elements of the ground set). The matrix is stored as a (read-only) property of
     the object.
+
+    Weights are stored as an n-dimensional real vector, where n is the number of
+    columns.
     """
 
     matrix: np.ndarray  #: matrix of real vectors
-
-    def __post_init__(self):
-        # validate matrix
-        if not self.matrix.ndim == 2:
-            raise ValueError(
-                f"Given array is not a matrix: has {self.matrix.ndim} dimensions"
-            )
-
-    @property
-    def ground_set(self) -> typing.Set[int]:
-        # return the indices of columns in the matrix
-        return set(range(self.matrix.shape[1]))
-
-    def is_independent(self, subset: typing.Set[int]) -> bool:
-        # fetch the given columns and check whether the resulting matrix is full-rank
-        columns_subset = self.get_matrix(subset)
-        return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
-
-    def get_matrix(self, subset: typing.Set[int]) -> np.ndarray:
-        """
-        Return the sub-matrix corresponding to the given subset of elements (columns).
-
-        :param subset: Subset of column indices of this matroid's matrix.
-        :return: The sub-matrix corresponding to the given subset,
-             preserving column order.
-        """
-        return self.matrix[:, sorted(subset)]
-
-@dataclasses.dataclass(frozen=True)
-class WeightedRealLinearMatroid(RealLinearMatroid, WeightedMatroid):
     weights: np.ndarray  #: vector of weights
 
     def __init__(self, matrix: np.ndarray, weights: np.ndarray = None):
-        super().__init__(matrix)
+        # validate matrix
+        if not matrix.ndim == 2:
+            raise ValueError(
+                f"Given array is not a matrix: has {self.matrix.ndim} dimensions"
+            )
 
         # validate and store weights
         weights_shape = (matrix.shape[1],)
@@ -69,7 +46,28 @@ class WeightedRealLinearMatroid(RealLinearMatroid, WeightedMatroid):
             weights = np.ones(weights_shape, dtype=float)
 
         # must use setattr manually since this is a frozen dataclass
+        object.__setattr__(self, "matrix", matrix)
         object.__setattr__(self, "weights", weights)
+
+    @property
+    def ground_set(self) -> typing.Set[int]:
+        # return the indices of columns in the matrix
+        return set(range(self.matrix.shape[1]))
+
+    def is_independent(self, subset: typing.Set[int]) -> bool:
+        # fetch the given columns and check whether the resulting matrix is full-rank
+        columns_subset = self.get_matrix(subset)
+        return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
 
     def get_weight(self, element: int) -> float:
         return self.weights[element]
+
+    def get_matrix(self, subset: typing.Set[int]) -> np.ndarray:
+        """
+        Return the sub-matrix corresponding to the given subset of elements (columns).
+
+        :param subset: Subset of column indices of this matroid's matrix.
+        :return: The sub-matrix corresponding to the given subset,
+             preserving column order.
+        """
+        return self.matrix[:, sorted(subset)]
