@@ -31,3 +31,14 @@ python scripts/some_script.py
 ```
 
 If the above setup steps have been followed, this should run fine.
+
+
+## Tests
+
+Tests are written using the `pytest` framework.
+To run automated tests, do:
+```bash
+pytest tests
+```
+
+
