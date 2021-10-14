@@ -3,7 +3,7 @@ import typing
 import networkx
 import numpy as np
 
-from matroids.matroid import Matroid, RealLinearMatroid
+from matroids.matroid import ExplicitMatroid, Matroid, RealLinearMatroid
 
 from matroids.algorithms.greedy import maximal_independent_set
 from matroids.matroid.graphical import GraphicalMatroid
@@ -46,3 +46,10 @@ def test_graphical_matroid():
     # all and only subsets of edges of size < 3 should form an a acyclic graph
     assert independent_sets == frozenset(generate_subsets(matroid.ground_set, range(3)))
 
+
+def test_negative_weights():
+    # uniform matroid with three elements, one with negative weight
+    matroid = ExplicitMatroid.uniform(range(3), k=3, weights={0: 1.0, 1: 1.0, 2: -2.0})
+    result = maximal_independent_set(matroid)
+    # the maximal independent set shouldn't contain the element with negative weight
+    assert result == {0, 1}
