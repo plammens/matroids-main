@@ -15,9 +15,10 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
     elements = sorted(matroid.ground_set, key=matroid.get_weight, reverse=True)
 
     current_set: typing.Set[T] = set()
+    independence_checker = matroid.is_independent_incremental_stateful(current_set)
+    independence_checker.send(None)  # start generator
     for element in elements:
-        if matroid.is_independent(current_set | {element}):
-            current_set.add(element)
+        independence_checker.send(element)
 
     return current_set
 
