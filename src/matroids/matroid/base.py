@@ -73,15 +73,15 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
 
         This method provides an implementation of the independence check in cases in
         which we want to test a sequence of subsets (S0, S1, ..., Sn, ...) such that
-        S0 is the empty set and each successive set is obtained by adding a new element
-        to the previous.
+        each successive set is obtained by adding a new element to the previous.
 
         The interface is as follows. This method takes a (mutable) set S, which is
         assumed to be independent, and returns a generator object. The initial value
-        of S acts as the "seed" for the sequence, and is usually the empty set. When
-        the ``.send(x)`` method of the generator is called, the generator tests
-        whether S + x is independent; if it is, it adds x to S. Then, the generator
-        yields whether the updated S is an independent set (as a boolean).
+        of S acts as the "seed" for the sequence (S0 above), and is usually the empty
+        set. When the ``.send(x)`` method of the generator is called, the generator
+        tests whether S + x is independent; if it is, it adds x to S. Then,
+        the generator yields whether the updated S is an independent set (as a
+        boolean).
 
         The given set is modified in-place, so the caller will be able to see the
         modifications on the set S.
