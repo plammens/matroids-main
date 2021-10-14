@@ -29,11 +29,12 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def is_independent(self, subset: typing.Collection[T]) -> bool:
+    def is_independent(self, subset: typing.AbstractSet[T]) -> bool:
         """
         Membership function for the collection of independent sets, I.
 
-        :param subset: A subset of elements of the ground set.
+        :param subset: A subset of elements of the ground set. Behaviour is undefined
+            if it contains some elements that are not in the ground set.
         :return: Whether ``subset`` is an independent set in this matroid.
         """
         pass

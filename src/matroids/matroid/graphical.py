@@ -28,7 +28,7 @@ class GraphicalMatroid(Matroid[EdgeType]):
     def ground_set(self) -> typing.FrozenSet[EdgeType]:
         return frozenset(self.graph.edges)
 
-    def is_independent(self, subset: typing.Collection[EdgeType]) -> bool:
+    def is_independent(self, subset: typing.AbstractSet[EdgeType]) -> bool:
         subgraph = self.graph.edge_subgraph(subset)
         if not subgraph:
             return True  # special case for empty graph; otherwise nx exception
