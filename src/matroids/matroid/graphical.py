@@ -53,6 +53,8 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
                 # the edge connects different connected components, so we can add it
                 is_independent = True
                 independent_subset.add(new_edge)
+                # update the connected components
+                node_to_connected_component.union(u, v)
 
     def get_weight(self, element: EdgeType) -> float:
         weight = self.graph.get_edge_data(*element).get("weight", 1.0)
