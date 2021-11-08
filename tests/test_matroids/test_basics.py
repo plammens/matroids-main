@@ -10,7 +10,7 @@ from matroids.matroid.graphical import GraphicalMatroid
 from matroids.utils import generate_subsets
 
 
-def get_independent_sets(matroid: Matroid) -> typing.FrozenSet:
+def get_independent_sets(matroid: Matroid) -> typing.FrozenSet[typing.FrozenSet]:
     """
     Compute the explicit family of independent sets, I, of the given matroid.
 
@@ -40,11 +40,22 @@ def test_basic_maximal_independent_set():
 
 
 def test_graphical_matroid():
-    graph = networkx.complete_graph(3)
+    graph = networkx.cycle_graph(4)
     matroid = GraphicalMatroid(graph)
     independent_sets = get_independent_sets(matroid)
-    # all and only subsets of edges of size < 3 should form an a acyclic graph
-    assert independent_sets == frozenset(generate_subsets(matroid.ground_set, range(3)))
+    # only subsets of edges of size < 3, plus some of size 4, form an a acyclic graph
+    assert independent_sets == (
+        frozenset(generate_subsets(matroid.ground_set, range(3)))
+        | frozenset(
+            {
+                # all edges minus one
+                frozenset({(0, 1), (1, 2), (2, 3)}),
+                frozenset({(0, 1), (1, 2), (0, 3)}),
+                frozenset({(0, 1), (2, 3), (0, 3)}),
+                frozenset({(1, 2), (2, 3), (0, 3)}),
+            }
+        )
+    )
 
 
 def test_negative_weights():
