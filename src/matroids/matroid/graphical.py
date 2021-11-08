@@ -41,8 +41,8 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
         initial_subgraph = self.graph.edge_subgraph(independent_subset)
         node_to_connected_component = nx.utils.UnionFind(initial_subgraph.nodes)
         connected_components = nx.algorithms.connected_components(initial_subgraph)
-        for c in connected_components:
-            node_to_connected_component.union(*c.nodes)
+        for component_nodes in connected_components:
+            node_to_connected_component.union(*component_nodes)
 
         # the generator
         is_independent = True
