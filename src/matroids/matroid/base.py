@@ -126,3 +126,31 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         :return: The numeric weight associated to the given element.
         """
         return 1.0
+
+
+class MutableMatroid(Matroid[T], metaclass=abc.ABCMeta):
+    """Base class for mutable matroid subclasses."""
+
+    @abc.abstractmethod
+    def add_element(self, element: T) -> None:
+        """
+        Add an element to the matroid.
+
+        The element will be added to the ground set. Whether the independent sets are
+        modified depends on the concrete subclass.
+
+        :param element: Element to be added.
+        """
+        pass
+
+    @abc.abstractmethod
+    def remove_element(self, element: T) -> None:
+        """
+        Remove an element from the matroid.
+
+        The element will be removed from the ground set and any independent sets
+        containing it.
+
+        :param element: Element to be removed.
+        """
+        pass

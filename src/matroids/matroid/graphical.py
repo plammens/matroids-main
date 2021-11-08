@@ -1,16 +1,15 @@
 import dataclasses
-import itertools
 import typing
 
-from .base import Matroid
-
 import networkx as nx
+
+from .base import MutableMatroid
 
 EdgeType = typing.Tuple[typing.Any, typing.Any]
 
 
 @dataclasses.dataclass(frozen=True)
-class GraphicalMatroid(Matroid[EdgeType]):
+class GraphicalMatroid(MutableMatroid[EdgeType]):
     """
     A matroid based on a graph.
 
@@ -48,7 +47,7 @@ class GraphicalMatroid(Matroid[EdgeType]):
         # the generator
         is_independent = True
         while True:
-            u, v = new_edge = (yield is_independent)
+            u, v = new_edge = yield is_independent
             # the following check is amortized O(1)
             if node_to_connected_component[u] != node_to_connected_component[v]:
                 # the edge connects different connected components, so we can add it
@@ -59,3 +58,9 @@ class GraphicalMatroid(Matroid[EdgeType]):
         weight = self.graph.get_edge_data(*element).get("weight", 1.0)
         assert isinstance(weight, float)
         return weight
+
+    def add_element(self, element: EdgeType) -> None:
+        self.graph.add_edge(*element)
+
+    def remove_element(self, element: EdgeType) -> None:
+        self.graph.remove_edge(*element)
