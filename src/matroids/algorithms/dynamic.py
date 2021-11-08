@@ -1,0 +1,58 @@
+import typing
+
+import numpy as np
+
+from matroids.matroid import MutableMatroid, T
+
+
+def dynamic_maximal_independent_set_remove(
+    matroid: MutableMatroid[T],
+) -> typing.Generator[typing.Set, T, None]:
+    """
+    Compute the maximal independent set after each removal of an element.
+
+    :param matroid: Weighted matroid of which to find the maximal independent set.
+    :return: A generator that accepts elements and yields the maximal independent set
+        after removing the received element from the matroid.
+    """
+    # sort elements in descending order of weight
+    elements = sorted(
+        filter(lambda x: matroid.get_weight(x) >= 0, matroid.ground_set),
+        key=matroid.get_weight,
+        reverse=True,
+    )
+    # array of boolean indicators for whether each element is in the MIS at the ith step
+    indicators = np.zeros(shape=(len(elements),), dtype=bool)
+
+    # array of weights (in ascending order) for calls to np.searchsorted
+    ascending_weights = np.array([matroid.get_weight(x) for x in elements])[::-1]
+
+    removed = set()
+    i = 0  # sorted index of removed element
+    while True:
+        # recover greedy algorithm set just before adding the deleted element
+        current_set = set(x for x, flag in zip(elements[:i], indicators[:i]) if flag)
+
+        # rerun greedy from this point onwards
+        independence_checker = matroid.is_independent_incremental_stateful(current_set)
+        independence_checker.send(None)  # start generator
+        for j in range(i, len(elements)):
+            element = elements[j]
+            if element in removed:
+                continue
+            indicators[j] = independence_checker.send(element)
+
+        # reuse the current MIS while the element to remove is not in it
+        still_valid = True
+        while still_valid:
+            to_remove = yield current_set
+            to_remove_weight = matroid.get_weight(to_remove)
+            matroid.remove_element(to_remove)
+            removed.add(to_remove)
+            still_valid = to_remove not in current_set
+
+        # do binary search to find index of removed element
+        i = (len(elements) - 1) - np.searchsorted(
+            ascending_weights,
+            to_remove_weight,  # noqa
+        )
