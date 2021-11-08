@@ -53,3 +53,18 @@ def test_negative_weights():
     result = maximal_independent_set(matroid)
     # the maximal independent set shouldn't contain the element with negative weight
     assert result == {0, 1}
+
+
+def test_add_element():
+    matroid = ExplicitMatroid.uniform(range(3), k=2)
+    matroid.add_element(5)
+    assert matroid.ground_set == frozenset({0, 1, 2, 5})
+    assert matroid.weights[5] == 1.0
+
+
+def test_remove_element():
+    matroid = ExplicitMatroid.uniform(range(3), k=2)
+    matroid.remove_element(1)
+    assert matroid.ground_set == frozenset({0, 2})
+    assert matroid.independent_sets == set(map(frozenset, [{}, {0}, {2}, {0, 2}]))
+    assert 1 not in matroid.weights
