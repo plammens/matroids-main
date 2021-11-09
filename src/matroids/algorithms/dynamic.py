@@ -29,7 +29,7 @@ def dynamic_maximal_independent_set_remove(
 
     removed = set()
     i = 0  # sorted index of removed element
-    while True:
+    while not matroid.is_empty:
         # recover greedy algorithm set just before adding the deleted element
         current_set = set(
             element
@@ -45,6 +45,7 @@ def dynamic_maximal_independent_set_remove(
             if element in removed:
                 continue
             indicators[j] = independence_checker.send(element)
+        independence_checker.close()  # dispose of generator
 
         # reuse the current MIS while the element to remove is not in it
         still_valid = True
@@ -56,7 +57,12 @@ def dynamic_maximal_independent_set_remove(
             still_valid = to_remove not in current_set
 
         # do binary search to find index of removed element
+        # Must reverse index because elements are in descending order, but
+        # np.searchsorted() works on ascending order.
         i = (len(elements) - 1) - np.searchsorted(
             ascending_weights,
             to_remove_weight,  # noqa
         )
+
+    # matroid is empty; yield empty set (MIS) as the final yield, also as a sentinel
+    yield set()

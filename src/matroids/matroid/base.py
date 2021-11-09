@@ -28,6 +28,16 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         """Returns the ground set E corresponding to this matroid."""
         pass
 
+    def __bool__(self):
+        """As per the Python convention, whether the matroid is nonempty."""
+        return bool(self.ground_set)
+
+    @property
+    @typing.final
+    def is_empty(self):
+        """Whether the matroid is empty."""
+        return not bool(self)
+
     @abc.abstractmethod
     def is_independent(self, subset: typing.AbstractSet[T]) -> bool:
         """

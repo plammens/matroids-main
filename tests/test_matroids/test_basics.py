@@ -3,6 +3,7 @@ import typing
 import networkx
 import networkx as nx
 import numpy as np
+import pytest
 
 from matroids.matroid import ExplicitMatroid, Matroid, RealLinearMatroid
 
@@ -110,3 +111,10 @@ def test_dynamic_maximal_independent_set_remove():
     # remove another element, now only two edges with non-negative weight remain
     maximal = generator.send((1, 3))
     assert maximal == {(0, 3), (0, 2)}
+
+    # remove all remaining elements, check that generator closes
+    for edge in {(0, 3), (0, 2), (1, 2)}:
+        maximal = generator.send(edge)
+    assert maximal == set()
+    with pytest.raises(StopIteration):
+        generator.send(None)

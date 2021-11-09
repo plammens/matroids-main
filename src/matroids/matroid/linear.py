@@ -55,6 +55,9 @@ class RealLinearMatroid(Matroid[int]):
         # return the indices of columns in the matrix
         return frozenset(range(self.matrix.shape[1]))
 
+    def __bool__(self):
+        return bool(self.matrix.shape[1])
+
     def is_independent(self, subset: typing.AbstractSet[int]) -> bool:
         # fetch the given columns and check whether the resulting matrix is full-rank
         columns_subset = self.get_matrix(subset)
