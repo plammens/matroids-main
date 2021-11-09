@@ -1,11 +1,13 @@
 import typing
 
 import networkx
+import networkx as nx
 import numpy as np
 
 from matroids.matroid import ExplicitMatroid, Matroid, RealLinearMatroid
 
 from matroids.algorithms.greedy import maximal_independent_set
+from matroids.algorithms.dynamic import dynamic_maximal_independent_set_remove
 from matroids.matroid.graphical import GraphicalMatroid
 from matroids.utils import generate_subsets
 
@@ -79,3 +81,32 @@ def test_remove_element():
     assert matroid.ground_set == frozenset({0, 2})
     assert matroid.independent_sets == set(map(frozenset, [{}, {0}, {2}, {0, 2}]))
     assert 1 not in matroid.weights
+
+
+def test_dynamic_maximal_independent_set_remove():
+    graph = nx.complete_graph(4)
+    weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
+    for (u, v), w in weights.items():
+        graph[u][v]["weight"] = w
+
+    matroid = GraphicalMatroid(graph)
+    generator = dynamic_maximal_independent_set_remove(matroid)
+
+    # initial MIS
+    maximal = generator.send(None)
+    assert len(maximal) == 3
+    assert {(2, 3), (0, 1)}.issubset(maximal) and (1, 2) not in maximal
+
+    # remove highest weight element
+    maximal = generator.send((2, 3))
+    assert len(maximal) == 3
+    assert (0, 1) in maximal and (1, 2) not in maximal
+
+    # remove another element
+    maximal = generator.send((0, 1))
+    assert len(maximal) == 3
+    assert (1, 2) not in maximal
+
+    # remove another element, now only two edges with non-negative weight remain
+    maximal = generator.send((1, 3))
+    assert maximal == {(0, 3), (0, 2)}
