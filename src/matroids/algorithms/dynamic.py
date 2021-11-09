@@ -12,8 +12,8 @@ def dynamic_maximal_independent_set_remove(
     Compute the maximal independent set after each removal of an element.
 
     :param matroid: Weighted matroid of which to find the maximal independent set.
-    :return: A generator that accepts elements and yields the maximal independent set
-        after removing the received element from the matroid.
+    :return: A generator that accepts elements to remove and yields the maximal
+        independent set after removing the given element from the matroid.
     """
     # sort elements in descending order of weight
     elements = sorted(
@@ -31,7 +31,11 @@ def dynamic_maximal_independent_set_remove(
     i = 0  # sorted index of removed element
     while True:
         # recover greedy algorithm set just before adding the deleted element
-        current_set = set(x for x, flag in zip(elements[:i], indicators[:i]) if flag)
+        current_set = set(
+            element
+            for element, flag in zip(elements[:i], indicators[:i])
+            if flag and element not in removed
+        )
 
         # rerun greedy from this point onwards
         independence_checker = matroid.is_independent_incremental_stateful(current_set)
