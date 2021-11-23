@@ -1,35 +1,19 @@
 """Empirical analysis of the greedy algorithm on real graph datasets."""
-import pathlib
-import tarfile
 
 import matplotlib.pyplot as plt
-import networkx as nx
 import numpy as np
 import perfplot
 
 from matroids.algorithms.greedy import maximal_independent_set
 from matroids.matroid import GraphicalMatroid
-from utils.download import ensure_downloaded
+from utils.slndc import load_facebook_dataset
 
 
 rng = np.random.default_rng(seed=2021)
 
-
 # download a graph dataset from the Stanford Large Network Dataset Collection
-path = ensure_downloaded(
-    "https://snap.stanford.edu/data/facebook.tar.gz",
-    path=pathlib.Path.cwd().joinpath("downloads").joinpath("facebook.tar.gz"),
-)
-tar = tarfile.open(path)
-filenames = [name for name in tar.getnames() if name.endswith("edges")]
-networks = []
-for name in filenames:
-    with tar.extractfile(name) as file:
-        edges = [tuple(map(int, line.split())) for line in file.readlines()]
-        network = nx.from_edgelist(edges)
-        networks.append(network)
-networks = dict((len(g.edges), g) for g in networks)
-
+# index by number of edges (size of ground set)
+networks = {len(g.edges): g for g in load_facebook_dataset()}
 
 plots = {
     "Performance on the Facebook dataset": (

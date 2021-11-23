@@ -74,3 +74,9 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
 
     def remove_element(self, element: EdgeType) -> None:
         self.graph.remove_edge(*element)
+
+
+def set_weights(graph: nx.Graph, weights: typing.Mapping[EdgeType, float]) -> None:
+    """Utility to set weights on a graph in a way compatible with GraphicalMatroid."""
+    for (u, v), w in weights.items():
+        graph[u][v]["weight"] = w
