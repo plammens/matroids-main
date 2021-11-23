@@ -118,3 +118,18 @@ def test_dynamic_maximal_independent_set_remove():
     assert maximal == set()
     with pytest.raises(StopIteration):
         generator.send(None)
+
+
+def test_naive_dynamic_remove_uniform_weights():
+    # test that removing an element from a matroid with uniform weights
+    # selects the appropriate element to restart from in naive dynamic algorithm
+    # (searching by weight isn't enough, as weight isn't unique)
+
+    graph = nx.complete_graph(5)
+    matroid = GraphicalMatroid(graph)
+    remover = dynamic_maximal_independent_set_remove(matroid)
+    maximal = remover.send(None)
+
+    to_remove = list(maximal)[2]
+    maximal = remover.send(to_remove)
+    assert maximal == maximal_independent_set(matroid)

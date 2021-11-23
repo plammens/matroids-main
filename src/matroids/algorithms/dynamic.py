@@ -62,7 +62,11 @@ def dynamic_maximal_independent_set_remove(
         i = (len(elements) - 1) - np.searchsorted(
             ascending_weights,
             to_remove_weight,  # noqa
+            side="right",  # in case of equal weights, select first in descending order
         )
+        # there might be elements with the same weight, do linear search from here
+        while elements[i] != to_remove:  # noqa
+            i += 1
 
     # matroid is empty; yield empty set (MIS) as the final yield, also as a sentinel
     yield set()
