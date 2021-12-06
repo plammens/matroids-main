@@ -3,6 +3,7 @@ import typing
 import numpy as np
 
 from matroids.matroid import MutableMatroid, T
+from .static import maximal_independent_set_uniform_weights
 
 
 def dynamic_maximal_independent_set_remove(
@@ -69,3 +70,27 @@ def dynamic_maximal_independent_set_remove(
 
     # matroid is empty; yield empty set (MIS) as the final yield, also as a sentinel
     yield set()
+
+
+def dynamic_maximal_independent_set_add_uniform_weights(
+    matroid: MutableMatroid[T]
+) -> typing.Generator[typing.Set, T, None]:
+    """
+    Compute the M.I.S. after each addition of an element, assuming uniform weights.
+
+    Assumes that the weight of all elements is equal, i.e. all elements have the same
+    positive weight.
+
+    :param matroid: Uniformly weighted matroid of which to compute the maximal
+        independent set.
+    :return: A generator that accepts elements to add and yields the maximal
+        independent set after removing the given element from the matroid.
+    """
+    # compute initial M.I.S.
+    current_set = maximal_independent_set_uniform_weights(matroid)
+
+    # since all weights are the same, adding an element is just a matter of independence
+    independence_checker = matroid.is_independent_incremental_stateful(current_set)
+    while True:
+        new_element = yield current_set
+        independence_checker.add_if_independent(new_element)
