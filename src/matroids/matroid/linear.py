@@ -51,9 +51,9 @@ class RealLinearMatroid(Matroid[int]):
         object.__setattr__(self, "weights", weights)
 
     @property
-    def ground_set(self) -> typing.FrozenSet[int]:
+    def ground_set(self) -> typing.Collection[int]:
         # return the indices of columns in the matrix
-        return frozenset(range(self.matrix.shape[1]))
+        return range(self.matrix.shape[1])
 
     def __bool__(self):
         return bool(self.matrix.shape[1])

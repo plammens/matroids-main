@@ -24,8 +24,13 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def ground_set(self) -> typing.FrozenSet[T]:
-        """Returns the ground set E corresponding to this matroid."""
+    def ground_set(self) -> typing.Collection[T]:
+        """
+        Returns a collection of elements making up the ground set (E) of this matroid.
+
+        The caller shouldn't attempt to mutate the returned object, otherwise
+        undefined behaviour might ensue.
+        """
         pass
 
     def __bool__(self):
