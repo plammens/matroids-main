@@ -7,7 +7,10 @@ import pytest
 
 from matroids.matroid import ExplicitMatroid, Matroid, RealLinearMatroid
 
-from matroids.algorithms.static import maximal_independent_set
+from matroids.algorithms.static import (
+    maximal_independent_set,
+    maximal_independent_set_uniform_weights,
+)
 from matroids.algorithms.dynamic import dynamic_maximal_independent_set_remove
 from matroids.matroid.graphical import GraphicalMatroid
 from matroids.utils import generate_subsets
@@ -39,6 +42,20 @@ def test_basic_maximal_independent_set():
     matroid = RealLinearMatroid(matrix, weights)
     result = maximal_independent_set(matroid)
     # should have selected 2nd and 3rd columns:
+    assert result == {1, 2}
+
+
+def test_basic_maximal_independent_set_uniform_weights():
+    matrix = np.array(
+        [
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 0],
+        ]
+    )
+    matroid = RealLinearMatroid(matrix)  # uniform weights
+    result = maximal_independent_set_uniform_weights(matroid)
+    # maximal set of l.i. columns is 2nd and 3rd
     assert result == {1, 2}
 
 

@@ -24,3 +24,40 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
 
     # the set is modified in-place by the ``independence_checker`` generator
     return current_set
+
+
+def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> typing.Set[T]:
+    """
+    Compute the maximal independent set under the assumption that all weights are equal.
+
+    Assumes as a precondition that the weight of all elements is equal, i.e. all
+    elements have the same positive weight.
+
+    :param matroid: Uniformly weighted matroid of which to compute the maximal
+        independent set.
+    :return: The maximal independent set of the given matroid.
+    """
+    # initialise independence checker starting at empty set
+    checker = matroid.is_independent_incremental_stateful(independent_subset=set())
+
+    # make a mutable copy of the ground set
+    # start with elements that are independent on their own ("nonzero")
+    elements = set(
+        filter(checker.would_be_independent_after_adding, matroid.ground_set)
+    )
+
+    # while there are elements to be added
+    while elements:
+        # select arbitrary pivot element to add to the independent set
+        pivot = elements.pop()
+        checker.add_element(pivot)
+
+        # discard elements that can't be added to the independent set now
+        to_remove = [
+            element
+            for element in elements
+            if not checker.would_be_independent_after_adding(element)
+        ]
+        elements.difference_update(to_remove)
+
+    return checker.independent_subset
