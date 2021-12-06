@@ -17,10 +17,10 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
 
     current_set: typing.Set[T] = set()
     independence_checker = matroid.is_independent_incremental_stateful(current_set)
-    independence_checker.send(None)  # start generator
     # try to add elements with non-negative weight in descending order of weight
     for element in itertools.takewhile(lambda x: matroid.get_weight(x) >= 0, elements):
-        independence_checker.send(element)
+        if independence_checker.would_be_independent_after_adding(element):
+            independence_checker.add_element(element)
 
     # the set is modified in-place by the ``independence_checker`` generator
     return current_set

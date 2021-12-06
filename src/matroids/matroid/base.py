@@ -76,9 +76,69 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         """
         return self.is_independent(independent_subset | {new_element})
 
+    class StatefulIndependenceChecker:
+        """
+        Return type for the :meth:`is_independent_incremental_stateful` method.
+
+        Keeps track of a subset which is assumed to be independent at all times and
+        which is modified incrementally (adding one element at a time).
+
+        Subclasses should redefine this nested class (inheriting from this one) in
+        order to implement :meth:`is_independent_incremental_stateful`; see that method
+        for details.
+        """
+
+        def __init__(
+            self, matroid: "Matroid", independent_subset: typing.MutableSet[T]
+        ):
+            self.matroid = matroid
+            # current independent subset
+            self.independent_subset = independent_subset
+
+        def would_be_independent_after_adding(self, element: T) -> bool:
+            """
+            Whether the subset would stay independent after adding ``new_element``.
+
+            Doesn't actually add the given element to the current subset; use
+            :meth:`add_element` for that.
+            """
+            # default implementation falls back on simpler methods
+            return self.matroid.is_independent_incremental(
+                self.independent_subset, element
+            )
+
+        def add_element(self, element: T) -> None:
+            """
+            Add an element to the subset such that the latter remains independent.
+
+            The fact that adding the given element maintains the independence of the
+            subset is assumed as a precondition. For instance, one could check it using
+            :meth:`would_be_independent_after_adding` first and then only call this
+            method if the result was ``True``.
+            """
+            self.independent_subset.add(element)
+
+        @typing.final
+        def add_if_independent(self, element: T) -> bool:
+            """
+            Shortcut for ``would_be_independent_after_adding`` + ``add_element``.
+
+            Checks if adding the given element would maintain independence; if so, it
+            adds it to the subset.
+
+            :returns: Whether the given element was added to the subset, maintaining
+                independence.
+            """
+            if self.would_be_independent_after_adding(element):
+                self.add_element(element)
+                return True
+            else:
+                return False
+
+    @typing.final
     def is_independent_incremental_stateful(
         self, independent_subset: typing.MutableSet[T]
-    ) -> typing.Generator[bool, T, None]:
+    ) -> StatefulIndependenceChecker:
         """
         Special stateful implementation of an incremental independence check.
 
@@ -87,24 +147,25 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         each successive set is obtained by adding a new element to the previous.
 
         The interface is as follows. This method takes a (mutable) set S, which is
-        assumed to be independent, and returns a generator object. The initial value
-        of S acts as the "seed" for the sequence (S0 above), and is usually the empty
-        set. When the ``.send(x)`` method of the generator is called, the generator
-        tests whether S + x is independent; if it is, it adds x to S. Then,
-        the generator yields whether the updated S is an independent set (as a
-        boolean).
+        assumed to be independent, and returns a ``StatefulIndependenceChecker``
+        object that keeps track of S. The initial value of S acts as the "seed" for
+        the sequence (S0 above), and is usually the empty set. The caller can use
+        the ``.would_be_independent_after_adding(x)`` method of the returned object
+        to test whether S + x is independent; if it is, the caller can then add
+        x to S by calling ``.add_element(x)`` on the returned object.
 
         The given set is modified in-place, so the caller will be able to see the
-        modifications on the set S.
-
-        The generator itself is infinite, so it will be disposed of only when the
-        caller calls the ``.close()`` method or when it is garbage-collected.
+        modifications on the set S. On the other hand, the caller shouldn't modify S
+        by other means while the returned object is still being used, otherwise it
+        will result in undefined behaviour.
 
         The purpose of this method is to allow certain subclasses to provide a
         specialized implementation for this special case that is more efficient than
         the direct independence test or successive uses of
         :meth:`is_independent_incremental`. The default implementation falls back on
-        :meth:`is_independent_incremental`.
+        :meth:`is_independent_incremental`. To provide such a specialized
+        implementation, inheritors must override the nested class
+        :class:`Matroid.StatefulIndependenceChecker`, not this method itself.
 
         In particular, this special case is used in the greedy algorithm for finding
         a maximal independent set.
@@ -113,15 +174,12 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
             described above. As a precondition, it must be an independent set. Its
             initial value serves as the starting point for the sequence of sets.
 
-        :return: A generator object with the above specification.
+        :return: An object of the nested class ``StatefulIncrementalChecker`` satisfying
+            the above specification.
         """
-        is_independent = True
-        while True:
-            new_element = yield is_independent
-            if is_independent := self.is_independent_incremental(
-                independent_subset, new_element
-            ):
-                independent_subset.add(new_element)
+        return self.StatefulIndependenceChecker(
+            matroid=self, independent_subset=independent_subset
+        )
 
     @abc.abstractmethod
     def get_weight(self, element: T) -> float:

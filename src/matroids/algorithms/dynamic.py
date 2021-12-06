@@ -39,13 +39,12 @@ def dynamic_maximal_independent_set_remove(
 
         # rerun greedy from this point onwards
         independence_checker = matroid.is_independent_incremental_stateful(current_set)
-        independence_checker.send(None)  # start generator
         for j in range(i, len(elements)):
             element = elements[j]
             if element in removed:
                 continue
-            indicators[j] = independence_checker.send(element)
-        independence_checker.close()  # dispose of generator
+            indicators[j] = independence_checker.add_if_independent(element)
+        del independence_checker  # dispose of checker
 
         # reuse the current MIS while the element to remove is not in it
         still_valid = True
