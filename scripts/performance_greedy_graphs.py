@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import perfplot
 
-from matroids.algorithms.greedy import maximal_independent_set
+from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import GraphicalMatroid
 from utils.slndc import load_facebook_dataset
 

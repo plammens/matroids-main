@@ -4,7 +4,7 @@ import perfplot
 import numpy as np
 
 from matroids.matroid import RealLinearMatroid, ExplicitMatroid
-from matroids.algorithms.greedy import maximal_independent_set
+from matroids.algorithms.static import maximal_independent_set
 
 
 rng = np.random.default_rng(seed=2021)

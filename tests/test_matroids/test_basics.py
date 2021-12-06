@@ -7,7 +7,7 @@ import pytest
 
 from matroids.matroid import ExplicitMatroid, Matroid, RealLinearMatroid
 
-from matroids.algorithms.greedy import maximal_independent_set
+from matroids.algorithms.static import maximal_independent_set
 from matroids.algorithms.dynamic import dynamic_maximal_independent_set_remove
 from matroids.matroid.graphical import GraphicalMatroid
 from matroids.utils import generate_subsets
