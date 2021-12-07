@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 import perfplot
 
-from matroids.algorithms.dynamic import dynamic_maximal_independent_set_remove
+from matroids.algorithms.dynamic import dynamic_removal_maximal_independent_set
 from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import EdgeType, GraphicalMatroid, MutableMatroid, set_weights
 from utils.slndc import load_facebook_dataset
@@ -41,7 +41,7 @@ def make_setup(
         matroid_copy2 = GraphicalMatroid(make_network_copy(network, weights))
 
         # start generator for naive dynamic algorithm so as to only test removal step
-        remover_generator = dynamic_maximal_independent_set_remove(matroid_copy2)
+        remover_generator = dynamic_removal_maximal_independent_set(matroid_copy2)
         maximal_set = remover_generator.send(None)  # compute current MIS
 
         # choose an element to remove from the maximal independent set

@@ -6,7 +6,7 @@ from matroids.matroid import MutableMatroid, T
 from .static import maximal_independent_set_uniform_weights
 
 
-def dynamic_maximal_independent_set_remove(
+def dynamic_removal_maximal_independent_set(
     matroid: MutableMatroid[T],
 ) -> typing.Generator[typing.Set, T, None]:
     """
@@ -72,7 +72,7 @@ def dynamic_maximal_independent_set_remove(
     yield set()
 
 
-def dynamic_maximal_independent_set_add_uniform_weights(
+def dynamic_addition_maximal_independent_set_uniform_weights(
     matroid: MutableMatroid[T]
 ) -> typing.Generator[typing.Set, T, None]:
     """

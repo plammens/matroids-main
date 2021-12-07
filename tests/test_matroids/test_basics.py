@@ -11,7 +11,7 @@ from matroids.algorithms.static import (
     maximal_independent_set,
     maximal_independent_set_uniform_weights,
 )
-from matroids.algorithms.dynamic import dynamic_maximal_independent_set_remove
+from matroids.algorithms.dynamic import dynamic_removal_maximal_independent_set
 from matroids.matroid.graphical import GraphicalMatroid
 from matroids.utils import generate_subsets
 
@@ -108,7 +108,7 @@ def test_dynamic_maximal_independent_set_remove():
         graph[u][v]["weight"] = w
 
     matroid = GraphicalMatroid(graph)
-    generator = dynamic_maximal_independent_set_remove(matroid)
+    generator = dynamic_removal_maximal_independent_set(matroid)
 
     # initial MIS
     maximal = generator.send(None)
@@ -144,7 +144,7 @@ def test_naive_dynamic_remove_uniform_weights():
 
     graph = nx.complete_graph(5)
     matroid = GraphicalMatroid(graph)
-    remover = dynamic_maximal_independent_set_remove(matroid)
+    remover = dynamic_removal_maximal_independent_set(matroid)
     maximal = remover.send(None)
 
     to_remove = list(maximal)[2]
