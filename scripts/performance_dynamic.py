@@ -7,7 +7,10 @@ import networkx as nx
 import numpy as np
 import perfplot
 
-from matroids.algorithms.dynamic import dynamic_removal_maximal_independent_set
+from matroids.algorithms.dynamic import (
+    dynamic_removal_maximal_independent_set,
+    dynamic_removal_maximal_independent_set_uniform_weights,
+)
 from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import EdgeType, GraphicalMatroid, MutableMatroid, set_weights
 from utils.slndc import load_facebook_dataset
@@ -22,7 +25,14 @@ networks = {len(g.edges): g for g in load_facebook_dataset()}
 
 # define the setup function, mapping input size to setup data
 
-SetupData = Tuple[MutableMatroid, MutableMatroid, List[EdgeType], Generator]
+SetupData = Tuple[
+    List[EdgeType],
+    MutableMatroid,
+    MutableMatroid,
+    Generator,
+    MutableMatroid,
+    Generator,
+]
 
 
 def make_network_copy(network: nx.Graph, weights: Mapping[EdgeType, float]) -> nx.Graph:
@@ -39,10 +49,17 @@ def make_setup(
         weights = {} if uniform_weights else {e: rng.random() for e in network.edges}
         matroid_copy1 = GraphicalMatroid(make_network_copy(network, weights))
         matroid_copy2 = GraphicalMatroid(make_network_copy(network, weights))
+        matroid_copy3 = GraphicalMatroid(make_network_copy(network, weights))
 
         # start generator for naive dynamic algorithm so as to only test removal step
-        remover_generator = dynamic_removal_maximal_independent_set(matroid_copy2)
-        maximal_set = remover_generator.send(None)  # compute current MIS
+        remover_generator2 = dynamic_removal_maximal_independent_set(matroid_copy2)
+        maximal_set = remover_generator2.send(None)  # compute current MIS
+
+        # start generator for uniform weights dynamic algorithm
+        remover_generator3 = dynamic_removal_maximal_independent_set_uniform_weights(
+            matroid_copy3
+        )
+        remover_generator3.send(None)
 
         # choose an element to remove from the maximal independent set
         # (much more interesting than removing another element, which is trivial)
@@ -51,7 +68,14 @@ def make_setup(
         rng.shuffle(selected_elements)
         elements_to_remove = selected_elements[:number_of_deletions]
 
-        return matroid_copy1, matroid_copy2, elements_to_remove, remover_generator
+        return (
+            elements_to_remove,
+            matroid_copy1,
+            matroid_copy2,
+            remover_generator2,
+            matroid_copy3,
+            remover_generator3,
+        )
 
     return setup
 
@@ -60,7 +84,7 @@ def make_setup(
 
 
 def restart_greedy(setup_data: SetupData):
-    matroid, _, elements_to_remove, *_ = setup_data
+    elements_to_remove, matroid, *_ = setup_data
     results = []
     for element in elements_to_remove:
         matroid.remove_element(element)
@@ -69,7 +93,12 @@ def restart_greedy(setup_data: SetupData):
 
 
 def naive_dynamic(setup_data: SetupData):
-    _, _, elements_to_remove, remover_generator = setup_data
+    elements_to_remove, _, _, remover_generator, *_ = setup_data
+    return [remover_generator.send(element) for element in elements_to_remove]
+
+
+def uniform_weights_dynamic(setup_data: SetupData):
+    elements_to_remove, *_, remover_generator = setup_data
     return [remover_generator.send(element) for element in elements_to_remove]
 
 
@@ -77,25 +106,28 @@ plots = {
     "Single deletion on the FB dataset, uniform weights": (
         sorted(networks.keys())[:7],
         make_setup(uniform_weights=True, number_of_deletions=1),
+        [restart_greedy,  naive_dynamic, uniform_weights_dynamic],
     ),
     "Single deletion on the FB dataset, random weights": (
         sorted(networks.keys())[:7],
         make_setup(uniform_weights=False, number_of_deletions=1),
+        [restart_greedy,  naive_dynamic],
     ),
     "10 deletions in sequence on the FB dataset, random weights": (
         sorted(networks.keys())[:7],
         make_setup(uniform_weights=False, number_of_deletions=10),
+        [restart_greedy,  naive_dynamic],
     ),
 }
 
-for title, (n_range, factory) in plots.items():
+for title, (n_range, factory, kernels) in plots.items():
     results = perfplot.bench(
         n_range=list(n_range),
         setup=factory,
-        kernels=[restart_greedy, naive_dynamic],
+        kernels=kernels,
         xlabel="number of edges",
         target_time_per_measurement=0.0,  # avoid repetitions, mutable operations
-        equality_check=operator.eq,  # plain equality, can't use np.allclose on sets
+        equality_check=None,  # plain equality, can't use np.allclose on sets
     )
     results.plot()
     plt.title(title)
