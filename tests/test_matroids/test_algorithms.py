@@ -65,33 +65,33 @@ def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
         graph[u][v]["weight"] = w
 
     matroid = GraphicalMatroid(graph)
-    generator = dynamic_removal_maximal_independent_set(matroid)
+    remover = dynamic_removal_maximal_independent_set(matroid)
 
     # initial MIS
-    maximal = generator.send(None)
+    maximal = remover.send(None)
     assert len(maximal) == 3
     assert {(2, 3), (0, 1)}.issubset(maximal) and (1, 2) not in maximal
 
     # remove highest weight element
-    maximal = generator.send((2, 3))
+    maximal = remover.send((2, 3))
     assert len(maximal) == 3
     assert (0, 1) in maximal and (1, 2) not in maximal
 
     # remove another element
-    maximal = generator.send((0, 1))
+    maximal = remover.send((0, 1))
     assert len(maximal) == 3
     assert (1, 2) not in maximal
 
     # remove another element, now only two edges with non-negative weight remain
-    maximal = generator.send((1, 3))
+    maximal = remover.send((1, 3))
     assert maximal == {(0, 3), (0, 2)}
 
     # remove all remaining elements, check that generator closes
     for edge in {(0, 3), (0, 2), (1, 2)}:
-        maximal = generator.send(edge)
+        maximal = remover.send(edge)
     assert maximal == set()
     with pytest.raises(StopIteration):
-        generator.send(None)
+        remover.send(None)
 
 
 @pytest.mark.parametrize(
