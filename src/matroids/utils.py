@@ -1,10 +1,10 @@
 import itertools
-from typing import Collection, FrozenSet, Iterable, Iterator, Optional
+import typing as tp
 
 
 def generate_subsets(
-    s: Collection, sizes: Optional[Iterable[int]] = None
-) -> Iterator[FrozenSet]:
+    s: tp.AbstractSet, sizes: tp.Optional[tp.Iterable[int]] = None
+) -> tp.Iterator[tp.FrozenSet]:
     """
     Generate all subsets of a set of the given sizes, in ascending order of size.
 

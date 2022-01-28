@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import typing
 import numpy as np
 
@@ -51,9 +52,10 @@ class RealLinearMatroid(Matroid[int]):
         object.__setattr__(self, "weights", weights)
 
     @property
-    def ground_set(self) -> typing.Collection[int]:
+    @functools.cache  # this matroid is not mutable so we can memoize
+    def ground_set(self) -> typing.AbstractSet[int]:
         # return the indices of columns in the matrix
-        return range(self.matrix.shape[1])
+        return set(range(self.matrix.shape[1]))
 
     def __bool__(self):
         return bool(self.matrix.shape[1])

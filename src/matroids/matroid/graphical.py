@@ -24,7 +24,7 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
     graph: nx.Graph
 
     @property
-    def ground_set(self) -> typing.Collection[EdgeType]:
+    def ground_set(self) -> typing.AbstractSet[EdgeType]:
         return self.graph.edges
 
     def __bool__(self):

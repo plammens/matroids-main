@@ -56,7 +56,7 @@ class ExplicitMatroid(MutableMatroid[typing.Any]):
     del T
 
     @property
-    def ground_set(self) -> typing.Collection[typing.Any]:
+    def ground_set(self) -> typing.AbstractSet[typing.Any]:
         return self.elements
 
     def is_independent(self, subset: typing.AbstractSet[typing.Any]) -> bool:

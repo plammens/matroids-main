@@ -24,9 +24,9 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def ground_set(self) -> typing.Collection[T]:
+    def ground_set(self) -> typing.AbstractSet[T]:
         """
-        Returns a collection of elements making up the ground set (E) of this matroid.
+        Returns the set of elements (the ground set, E) of this matroid.
 
         The caller shouldn't attempt to mutate the returned object, otherwise
         undefined behaviour might ensue.
