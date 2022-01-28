@@ -2,6 +2,9 @@
 Tests for the various matroid algorithms in :module:`matroids.algorithms`.
 """
 
+import itertools as itt
+
+import more_itertools as mitt
 import networkx as nx
 import numpy as np
 import pytest
@@ -98,18 +101,29 @@ def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
         dynamic_removal_maximal_independent_set_uniform_weights,
     ],
 )
-def test_dynamicRemovalMaximalIndependentSet_uniformWeights_correct(
+def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct(
     algorithm: DynamicMaximalIndependentSetAlgorithm,
 ):
-    # test that removing an element from a matroid with uniform weights
-    # selects the appropriate element to restart from in naive dynamic algorithm
-    # (searching by weight isn't enough, as weight isn't unique)
-
-    graph = nx.complete_graph(5)
+    graph = nx.complete_graph(4)
     matroid = GraphicalMatroid(graph)
     remover = algorithm(matroid)
-    maximal = remover.send(None)  # initial MIS
 
-    to_remove = list(maximal)[2]
-    maximal = remover.send(to_remove)
-    assert maximal == maximal_independent_set(matroid)
+    # initial MIS
+    maximal = remover.send(None)
+    assert len(maximal) == 3
+    assert matroid.is_independent(maximal)
+
+    # remove an element not in maximal
+    to_remove = mitt.first(itt.filterfalse(maximal.__contains__, matroid.ground_set))
+    new_maximal = remover.send(to_remove)
+    assert new_maximal == maximal
+    maximal = new_maximal
+    del new_maximal
+
+    # remove elements in maximal
+    for to_remove in list(maximal):
+        maximal = remover.send(to_remove)
+        assert to_remove not in maximal
+        assert matroid.is_independent(maximal)
+        # check size approximately
+        assert len(maximal) >= min(3, len(matroid.ground_set) - 1)
