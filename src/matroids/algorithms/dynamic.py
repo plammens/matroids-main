@@ -6,6 +6,15 @@ from matroids.matroid import MutableMatroid, T
 from .static import maximal_independent_set_uniform_weights
 
 
+# type alias for dynamic maximal independent set algorithms:
+# takes a mutable matroid as an argument
+# and returns a generator that accepts elements to add/remove and yields the maximal
+# independent set after removing the given element from the matroid
+DynamicMaximalIndependentSetAlgorithm = typing.Callable[
+    [MutableMatroid[T]], typing.Generator[typing.Set, T, None]
+]
+
+
 def dynamic_removal_maximal_independent_set(
     matroid: MutableMatroid[T],
 ) -> typing.Generator[typing.Set, T, None]:
