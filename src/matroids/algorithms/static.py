@@ -1,11 +1,11 @@
 """The greedy algorithm for finding the maximal independent set of a matroid"""
 import itertools
-import typing
+import typing as tp
 
 from matroids.matroid import Matroid, T
 
 
-def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
+def maximal_independent_set(matroid: Matroid[T]) -> tp.Set[T]:
     """
     Use the greedy algorithm to find the maximal independent set of a matroid.
 
@@ -15,7 +15,7 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
     # sort elements in descending order of weight
     elements = sorted(matroid.ground_set, key=matroid.get_weight, reverse=True)
 
-    current_set: typing.Set[T] = set()
+    current_set: tp.Set[T] = set()
     independence_checker = matroid.is_independent_incremental_stateful(current_set)
     # try to add elements with non-negative weight in descending order of weight
     for element in itertools.takewhile(lambda x: matroid.get_weight(x) >= 0, elements):
@@ -26,7 +26,7 @@ def maximal_independent_set(matroid: Matroid[T]) -> typing.Set[T]:
     return current_set
 
 
-def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> typing.Set[T]:
+def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> tp.Set[T]:
     """
     Compute the maximal independent set under the assumption that all weights are equal.
 

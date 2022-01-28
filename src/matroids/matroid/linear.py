@@ -1,6 +1,6 @@
 import dataclasses
 import functools
-import typing
+import typing as tp
 import numpy as np
 
 from .base import Matroid
@@ -53,14 +53,14 @@ class RealLinearMatroid(Matroid[int]):
 
     @property
     @functools.cache  # this matroid is not mutable so we can memoize
-    def ground_set(self) -> typing.AbstractSet[int]:
+    def ground_set(self) -> tp.AbstractSet[int]:
         # return the indices of columns in the matrix
         return set(range(self.matrix.shape[1]))
 
     def __bool__(self):
         return bool(self.matrix.shape[1])
 
-    def is_independent(self, subset: typing.AbstractSet[int]) -> bool:
+    def is_independent(self, subset: tp.AbstractSet[int]) -> bool:
         # fetch the given columns and check whether the resulting matrix is full-rank
         columns_subset = self.get_matrix(subset)
         return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
@@ -68,7 +68,7 @@ class RealLinearMatroid(Matroid[int]):
     def get_weight(self, element: int) -> float:
         return self.weights[element]
 
-    def get_matrix(self, subset: typing.AbstractSet[int]) -> np.ndarray:
+    def get_matrix(self, subset: tp.AbstractSet[int]) -> np.ndarray:
         """
         Return the sub-matrix corresponding to the given subset of elements (columns).
 

@@ -1,12 +1,12 @@
 import dataclasses
-import typing
+import typing as tp
 
 from .base import MutableMatroid
 from matroids.utils import generate_subsets
 
 
 @dataclasses.dataclass(frozen=True)
-class ExplicitMatroid(MutableMatroid[typing.Any]):
+class ExplicitMatroid(MutableMatroid[tp.Any]):
     """
     A matroid based on an explicit ground set and independent sets family.
 
@@ -14,11 +14,9 @@ class ExplicitMatroid(MutableMatroid[typing.Any]):
     indeed satisfy the axioms of a matroid.
     """
 
-    elements: typing.Set[typing.Any]  #: the explicit ground set
-    independent_sets: typing.Set[typing.FrozenSet[typing.Any]]
-    weights: typing.MutableMapping[
-        typing.Any, float
-    ] = None  #: mapping of elements to weights
+    elements: tp.Set[tp.Any]  #: the explicit ground set
+    independent_sets: tp.Set[tp.FrozenSet[tp.Any]]
+    weights: tp.MutableMapping[tp.Any, float] = None  #: mapping of elements to weights
 
     def __post_init__(self):
         # initialise default weights
@@ -28,14 +26,14 @@ class ExplicitMatroid(MutableMatroid[typing.Any]):
 
     __hash__ = None
 
-    T = typing.TypeVar("T")
+    T = tp.TypeVar("T")
 
     @classmethod
     def uniform(
         cls,
-        elements: typing.Collection[T],
+        elements: tp.Collection[T],
         k: int,
-        weights: typing.Optional[typing.MutableMapping[T, float]] = None,
+        weights: tp.Optional[tp.MutableMapping[T, float]] = None,
     ) -> "ExplicitMatroid":
         """
         Make a uniform matroid: where every set of size at most k is independent.
@@ -56,13 +54,13 @@ class ExplicitMatroid(MutableMatroid[typing.Any]):
     del T
 
     @property
-    def ground_set(self) -> typing.AbstractSet[typing.Any]:
+    def ground_set(self) -> tp.AbstractSet[tp.Any]:
         return self.elements
 
-    def is_independent(self, subset: typing.AbstractSet[typing.Any]) -> bool:
+    def is_independent(self, subset: tp.AbstractSet[tp.Any]) -> bool:
         return frozenset(subset) in self.independent_sets
 
-    def get_weight(self, element: typing.Any) -> float:
+    def get_weight(self, element: tp.Any) -> float:
         return self.weights[element]
 
     def add_element(self, element) -> None:

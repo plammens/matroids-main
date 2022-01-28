@@ -1,4 +1,4 @@
-import typing
+import typing as tp
 
 import numpy as np
 
@@ -10,14 +10,14 @@ from .static import maximal_independent_set_uniform_weights
 # takes a mutable matroid as an argument
 # and returns a generator that accepts elements to add/remove and yields the maximal
 # independent set after removing the given element from the matroid
-DynamicMaximalIndependentSetAlgorithm = typing.Callable[
-    [MutableMatroid[T]], typing.Generator[typing.Set, T, None]
+DynamicMaximalIndependentSetAlgorithm = tp.Callable[
+    [MutableMatroid[T]], tp.Generator[tp.Set, T, None]
 ]
 
 
 def dynamic_removal_maximal_independent_set(
     matroid: MutableMatroid[T],
-) -> typing.Generator[typing.Set, T, None]:
+) -> tp.Generator[tp.Set, T, None]:
     """
     Compute the maximal independent set after each removal of an element.
 
@@ -83,7 +83,7 @@ def dynamic_removal_maximal_independent_set(
 
 def dynamic_addition_maximal_independent_set_uniform_weights(
     matroid: MutableMatroid[T],
-) -> typing.Generator[typing.Set, T, None]:
+) -> tp.Generator[tp.Set, T, None]:
     """
     Compute the M.I.S. after each addition of an element, assuming uniform weights.
 
@@ -107,7 +107,7 @@ def dynamic_addition_maximal_independent_set_uniform_weights(
 
 def dynamic_removal_maximal_independent_set_uniform_weights(
     matroid: MutableMatroid[T],
-) -> typing.Generator[typing.Set, T, None]:
+) -> tp.Generator[tp.Set, T, None]:
     """
     Compute the M.I.S. after each removal of an element, assuming uniform weights.
 
@@ -129,9 +129,9 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
     elements = set(ground_set_nonzero)
 
     # list of pivot elements (elements added to MIS)
-    pivots: typing.List[T] = []
+    pivots: tp.List[T] = []
     # witness set i: elements removed at pivot step i
-    witness_sets: typing.List[typing.Set[T]] = []
+    witness_sets: tp.List[tp.Set[T]] = []
 
     while elements:
         # select arbitrary pivot element to add to the independent set

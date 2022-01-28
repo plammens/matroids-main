@@ -1,13 +1,13 @@
 """Utilities to access the Stanford Large Network Dataset Collection."""
 import pathlib
 import tarfile
-import typing
+import typing as tp
 import networkx as nx
 
 from utils.download import ensure_downloaded
 
 
-def load_facebook_dataset() -> typing.List[nx.Graph]:
+def load_facebook_dataset() -> tp.List[nx.Graph]:
     """
     Download and load the Facebook dataset from the SLNDC.
 

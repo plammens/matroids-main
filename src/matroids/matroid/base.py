@@ -1,12 +1,12 @@
 import abc
 
-import typing
+import typing as tp
 
 
-T = typing.TypeVar("T")
+T = tp.TypeVar("T")
 
 
-class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
+class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
     """
     Abstract base class for matroids.
 
@@ -24,7 +24,7 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def ground_set(self) -> typing.AbstractSet[T]:
+    def ground_set(self) -> tp.AbstractSet[T]:
         """
         Returns the set of elements (the ground set, E) of this matroid.
 
@@ -38,13 +38,13 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         return bool(self.ground_set)
 
     @property
-    @typing.final
+    @tp.final
     def is_empty(self):
         """Whether the matroid is empty."""
         return not bool(self)
 
     @abc.abstractmethod
-    def is_independent(self, subset: typing.AbstractSet[T]) -> bool:
+    def is_independent(self, subset: tp.AbstractSet[T]) -> bool:
         """
         Membership function for the collection of independent sets, I.
 
@@ -55,7 +55,7 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         pass
 
     def is_independent_incremental(
-        self, independent_subset: typing.AbstractSet[T], new_element: T
+        self, independent_subset: tp.AbstractSet[T], new_element: T
     ) -> bool:
         """
         Special implementation of the independence check for subsets of the form S + e.
@@ -94,7 +94,7 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
         """
 
         def __init__(
-            self, matroid: "Matroid", independent_subset: typing.MutableSet[T]
+            self, matroid: "Matroid", independent_subset: tp.MutableSet[T]
         ):
             self.matroid = matroid
             # current independent subset
@@ -123,7 +123,7 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
             """
             self.independent_subset.add(element)
 
-        @typing.final
+        @tp.final
         def add_if_independent(self, element: T) -> bool:
             """
             Shortcut for ``would_be_independent_after_adding`` + ``add_element``.
@@ -140,9 +140,9 @@ class Matroid(typing.Generic[T], metaclass=abc.ABCMeta):
             else:
                 return False
 
-    @typing.final
+    @tp.final
     def is_independent_incremental_stateful(
-        self, independent_subset: typing.MutableSet[T]
+        self, independent_subset: tp.MutableSet[T]
     ) -> StatefulIndependenceChecker:
         """
         Special stateful implementation of an incremental independence check.

@@ -1,11 +1,11 @@
 import dataclasses
-import typing
+import typing as tp
 
 import networkx as nx
 
 from .base import MutableMatroid
 
-EdgeType = typing.Tuple[typing.Any, typing.Any]
+EdgeType = tp.Tuple[tp.Any, tp.Any]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -24,13 +24,13 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
     graph: nx.Graph
 
     @property
-    def ground_set(self) -> typing.AbstractSet[EdgeType]:
+    def ground_set(self) -> tp.AbstractSet[EdgeType]:
         return self.graph.edges
 
     def __bool__(self):
         return bool(self.graph.edges)
 
-    def is_independent(self, subset: typing.AbstractSet[EdgeType]) -> bool:
+    def is_independent(self, subset: tp.AbstractSet[EdgeType]) -> bool:
         subgraph = self.graph.edge_subgraph(subset)
         if not subgraph:
             return True  # special case for empty graph; otherwise nx exception
@@ -40,7 +40,7 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
         def __init__(
             self,
             matroid: "GraphicalMatroid",
-            independent_subset: typing.MutableSet[EdgeType],
+            independent_subset: tp.MutableSet[EdgeType],
         ):
             super().__init__(matroid, independent_subset)
             self.matroid: "GraphicalMatroid"
@@ -84,7 +84,7 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
         self.graph.remove_edge(*element)
 
 
-def set_weights(graph: nx.Graph, weights: typing.Mapping[EdgeType, float]) -> None:
+def set_weights(graph: nx.Graph, weights: tp.Mapping[EdgeType, float]) -> None:
     """Utility to set weights on a graph in a way compatible with GraphicalMatroid."""
     for (u, v), w in weights.items():
         graph[u][v]["weight"] = w

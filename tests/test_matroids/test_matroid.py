@@ -2,7 +2,7 @@
 Tests for the :class:`matroids.matroid.Matroid` class hierarchy.
 """
 
-import typing
+import typing as tp
 
 import networkx
 
@@ -10,7 +10,7 @@ from matroids.matroid import ExplicitMatroid, GraphicalMatroid, Matroid
 from matroids.utils import generate_subsets
 
 
-def get_independent_sets(matroid: Matroid) -> typing.FrozenSet[typing.FrozenSet]:
+def get_independent_sets(matroid: Matroid) -> tp.FrozenSet[tp.FrozenSet]:
     """
     Compute the explicit family of independent sets, I, of the given matroid.
 
