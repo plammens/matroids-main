@@ -7,6 +7,30 @@ The goal is to empirically evaluate the performance of these two approaches, and
 
 ## Repository setup
 
+### Activate a virtual Python environment (optional)
+
+It is strongly recommended that you activate an isolated Python environment
+so that the dependencies you install for this project don't interfere with
+your system interpreter.
+
+For example, to create a [`virtualenv`](https://virtualenv.pypa.io/en/latest/):
+```bash
+virtualenv venv
+```
+Then activate it according to [platform-specific instructions](https://virtualenv.pypa.io/en/latest/user_guide.html#activators);
+e.g. on bash:
+```bash
+source venv/bin/activate
+```
+
+### Install dependencies
+
+To install the required Python packages for development, run
+```bash
+pip install -r requirements.txt
+```
+
+
 ### PYTHONPATH
 
 If running everything from source (i.e. without installing anything), the correct value of the PYTHONPATH environment variable should be set up first.
