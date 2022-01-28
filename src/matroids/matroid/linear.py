@@ -6,7 +6,7 @@ import numpy as np
 from .base import Matroid
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(eq=False)
 class RealLinearMatroid(Matroid[int]):
     """
     A linear matroid for vectors in R^n.

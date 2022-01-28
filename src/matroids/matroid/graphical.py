@@ -8,7 +8,7 @@ from .base import MutableMatroid
 EdgeType = tp.Tuple[tp.Any, tp.Any]
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(eq=False)
 class GraphicalMatroid(MutableMatroid[EdgeType]):
     """
     A matroid based on a graph.

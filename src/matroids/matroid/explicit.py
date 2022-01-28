@@ -5,7 +5,7 @@ from .base import MutableMatroid
 from matroids.utils import generate_subsets
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(eq=False)
 class ExplicitMatroid(MutableMatroid[tp.Any]):
     """
     A matroid based on an explicit ground set and independent sets family.
