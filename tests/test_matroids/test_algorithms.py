@@ -3,6 +3,7 @@ Tests for the various matroid algorithms in :module:`matroids.algorithms`.
 """
 
 import itertools as itt
+import random
 
 import more_itertools as mitt
 import networkx as nx
@@ -127,3 +128,32 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct
         assert matroid.is_independent(maximal)
         # check size approximately
         assert len(maximal) >= min(3, len(matroid.ground_set) - 1)
+
+
+@pytest.mark.parametrize(
+    "algorithm",
+    [
+        dynamic_removal_maximal_independent_set,
+        dynamic_removal_maximal_independent_set_uniform_weights,
+    ],
+)
+def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
+    algorithm: DynamicMaximalIndependentSetAlgorithm,
+):
+    graph = nx.gnp_random_graph(n=100, p=0.2)
+    matroid = GraphicalMatroid(graph)
+    remover = algorithm(matroid)
+
+    # select sequence of elements to remove
+    sequence = list(matroid.ground_set)
+    random.shuffle(sequence)
+    sequence.insert(0, None)
+
+    # use the static algorithm as a correct reference for comparison
+    for to_remove in sequence:
+        result_set = remover.send(to_remove)
+        reference_set = maximal_independent_set(matroid)
+        assert to_remove not in result_set
+        assert matroid.is_independent(result_set)
+        # weights are uniform so only need to check size of set to check maximality
+        assert len(result_set) == len(reference_set)
