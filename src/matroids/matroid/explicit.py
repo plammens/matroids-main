@@ -32,21 +32,21 @@ class ExplicitMatroid(MutableMatroid[tp.Any]):
     def uniform(
         cls,
         elements: tp.Collection[T],
-        k: int,
+        rank: int,
         weights: tp.Optional[tp.MutableMapping[T, float]] = None,
     ) -> "ExplicitMatroid":
         """
         Make a uniform matroid: where every set of size at most k is independent.
 
         :param elements: Elements making up the ground set.
-        :param k: The independent sets will be those of cardinality <= ``k``.
+        :param rank: The independent sets will be those of cardinality <= ``rank``.
         :param weights: Optionally specify custom weights for each element.
         :return: A new uniform matroid whose ground set is ``frozenset(elements)``
             and whose independent sets are all the subsets of the ground set that
             are of cardinality <= ``k``.
         """
         ground_set = set(elements)
-        independent_sets = set(generate_subsets(ground_set, sizes=range(k + 1)))
+        independent_sets = set(generate_subsets(ground_set, sizes=range(rank + 1)))
         if weights is not None and set(weights) != ground_set:
             raise ValueError("Keys of weights mapping don't coincide with elements.")
         return cls(ground_set, independent_sets, weights)

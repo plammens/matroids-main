@@ -25,11 +25,11 @@ def generate_n_by_n_matroid(size: int) -> RealLinearMatroid:
 plots = {
     "Performance on $U_{3,n}$": (
         range(0, 100, 10),
-        lambda n: ExplicitMatroid.uniform(elements=range(n), k=3),
+        lambda n: ExplicitMatroid.uniform(elements=range(n), rank=3),
     ),
     "Performance on free matroid of size n": (
         range(0, 20, 1),
-        lambda n: ExplicitMatroid.uniform(elements=range(n), k=n),
+        lambda n: ExplicitMatroid.uniform(elements=range(n), rank=n),
     ),
     "Performance on 2 x n uniform random matrices": (
         range(0, 1000, 100),

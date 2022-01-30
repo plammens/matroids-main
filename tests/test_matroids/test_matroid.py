@@ -25,14 +25,14 @@ def get_independent_sets(matroid: Matroid) -> tp.FrozenSet[tp.FrozenSet]:
 
 
 def test_mutableMatroid_addElement_addedCorrectly():
-    matroid = ExplicitMatroid.uniform(range(3), k=2)
+    matroid = ExplicitMatroid.uniform(range(3), rank=2)
     matroid.add_element(5)
     assert matroid.ground_set == frozenset({0, 1, 2, 5})
     assert matroid.weights[5] == 1.0
 
 
 def test_mutableMatroid_removeElement_removedCorrectly():
-    matroid = ExplicitMatroid.uniform(range(3), k=2)
+    matroid = ExplicitMatroid.uniform(range(3), rank=2)
     matroid.remove_element(1)
     assert matroid.ground_set == frozenset({0, 2})
     assert matroid.independent_sets == set(map(frozenset, [{}, {0}, {2}, {0, 2}]))
