@@ -120,76 +120,56 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
         independent set after removing the given element from the matroid.
     """
 
-    # ----------- do static algorithm to get initial MIS -----------
-    current_set = set()
-    checker = matroid.is_independent_incremental_stateful(current_set)
-    ground_set_nonzero = frozenset(
-        filter(checker.would_be_independent_after_adding, matroid.ground_set)
-    )
-    elements = set(ground_set_nonzero)
-
-    # list of pivot elements (elements added to MIS)
+    # set of available elements at ith step; starts with independent singletons
+    witness_sets: tp.List[tp.Set[T]] = [
+        {x for x in matroid.ground_set if matroid.is_independent({x})}
+    ]
+    # elements selected for the maximal independent set
     pivots: tp.List[T] = []
-    # witness set i: elements removed at pivot step i
-    witness_sets: tp.List[tp.Set[T]] = []
 
-    while elements:
-        # select arbitrary pivot element to add to the independent set
-        pivot = elements.pop()
-        checker.add_element(pivot)
-        pivots.append(pivot)
-
-        # compute witness set
-        to_remove = {
-            element
-            for element in elements
-            if not checker.would_be_independent_after_adding(element)
-        }
-        elements.difference_update(to_remove)
-        witness_sets.append(to_remove)
-
-    del checker
-
-    # --------- dynamic part ---------------
+    step = 0  # greedy algorithm step (index of witness set / pivot to choose)
     while not matroid.is_empty:
-        element_to_remove = yield current_set
+        # recover the set of available elements (that can be added) at the given step
+        del witness_sets[(step + 1) :]
+        available_elements = set(witness_sets[step])
 
-        # check if the element is a pivot
-        if element_to_remove in pivots:
-            # is a pivot; must restart algorithm from that step
-            step = pivots.index(element_to_remove)
+        # recover greedy algorithm set just before adding the deleted element
+        del pivots[step:]
+        current_set = set(pivots)
 
-            # reset pivots and witness steps from the step
-            del pivots[step:]
-            del witness_sets[step:]
+        # rerun greedy algorithm from this point onwards
+        independence_checker = matroid.is_independent_incremental_stateful(current_set)
+        while available_elements:
+            # select arbitrary pivot element to add to the independent set
+            pivot = available_elements.pop()
+            independence_checker.add_element(pivot)
+            pivots.append(pivot)
 
-            # reconstruct current independent set
-            current_set = set(pivots)
-            checker = matroid.is_independent_incremental_stateful(current_set)
+            # update available elements
+            available_elements = {
+                x
+                for x in available_elements
+                if independence_checker.would_be_independent_after_adding(x)
+            }
+            # store copy as witness set of step
+            witness_sets.append(available_elements.copy())
 
-            # reconstruct available elements
-            elements = set(ground_set_nonzero)  # make copy O(n)
-            # remove discarded elements up to the given step
-            elements.difference_update(*witness_sets)
+            step += 1  # not strictly needed but added for consistency
 
-            while elements:
-                # select arbitrary pivot element to add to the independent set
-                pivot = elements.pop()
-                checker.add_element(pivot)
-                pivots.append(pivot)
+        # reuse the current MIS while the element to remove is not in it (not a pivot)
+        still_valid = True
+        while still_valid:
+            element_to_remove = yield current_set
+            matroid.remove_element(element_to_remove)
+            # update witness sets
+            for witness_set in witness_sets:
+                witness_set.discard(element_to_remove)
 
-                # compute witness set
-                to_remove = {
-                    element
-                    for element in elements
-                    if not checker.would_be_independent_after_adding(element)
-                }
-                elements.difference_update(to_remove)
-                witness_sets.append(to_remove)
+            # check whether removed element is pivot
+            still_valid = element_to_remove not in current_set
 
-            del checker
+        # removing a pivot; find out algorithm step and start over
+        step = pivots.index(element_to_remove)  # noqa
 
-        else:
-            # not a pivot; solution doesn't change, only need to update witness sets
-            for witness in witness_sets:
-                witness.discard(element_to_remove)
+    # matroid is empty; yield empty set (MIS) as the final yield, also as a sentinel
+    yield set()
