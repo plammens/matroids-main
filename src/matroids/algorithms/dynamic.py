@@ -1,15 +1,16 @@
+import random
 import typing as tp
 
 import numpy as np
 
 from matroids.matroid import MutableMatroid, T
 from .static import maximal_independent_set_uniform_weights
-
-
 # type alias for dynamic maximal independent set algorithms:
 # takes a mutable matroid as an argument
 # and returns a generator that accepts elements to add/remove and yields the maximal
 # independent set after removing the given element from the matroid
+from ..utils import RandomAccessMutableSet
+
 DynamicMaximalIndependentSetAlgorithm = tp.Callable[
     [MutableMatroid[T]], tp.Generator[tp.Set, T, None]
 ]
@@ -121,8 +122,10 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
     """
 
     # set of available elements at ith step; starts with independent singletons
-    witness_sets: tp.List[tp.Set[T]] = [
-        {x for x in matroid.ground_set if matroid.is_independent({x})}
+    witness_sets: tp.List[RandomAccessMutableSet[T]] = [
+        RandomAccessMutableSet(
+            x for x in matroid.ground_set if matroid.is_independent({x})
+        )
     ]
     # elements selected for the maximal independent set
     pivots: tp.List[T] = []
@@ -131,7 +134,7 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
     while not matroid.is_empty:
         # recover the set of available elements (that can be added) at the given step
         del witness_sets[(step + 1) :]
-        available_elements = set(witness_sets[step])
+        available_elements = witness_sets[step]
 
         # recover greedy algorithm set just before adding the deleted element
         del pivots[step:]
@@ -141,20 +144,21 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
         independence_checker = matroid.is_independent_incremental_stateful(current_set)
         while available_elements:
             # select arbitrary pivot element to add to the independent set
-            pivot = available_elements.pop()
+            pivot = random.choice(available_elements)
+            available_elements.discard(pivot)
             independence_checker.add_element(pivot)
             pivots.append(pivot)
 
+            # advance onto the following step
+            step += 1
             # update available elements
-            available_elements = {
+            available_elements = RandomAccessMutableSet(
                 x
                 for x in available_elements
                 if independence_checker.would_be_independent_after_adding(x)
-            }
-            # store copy as witness set of step
-            witness_sets.append(available_elements.copy())
-
-            step += 1  # not strictly needed but added for consistency
+            )
+            # store as next witness set
+            witness_sets.append(available_elements)
 
         # reuse the current MIS while the element to remove is not in it (not a pivot)
         still_valid = True
