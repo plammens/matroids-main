@@ -51,10 +51,11 @@ It suffices to prepend `src` to PYTHONPATH:
 To run a script in the `scripts` directory, do the following from the repository root:
 
 ```bash
-python scripts/some_script.py
+python -O scripts/some_script.py
 ```
 
 If the above setup steps have been followed, this should run fine.
+The `-O` flag is to disable assertions (to get the most accurate performance measurements).
 
 
 ## Tests
