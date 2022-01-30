@@ -1,10 +1,11 @@
 """Script to generate some performance graphs for the greedy algorithm."""
 import matplotlib.pyplot as plt
-import perfplot
 import numpy as np
+import perfplot
 
-from matroids.matroid import RealLinearMatroid, ExplicitMatroid
 from matroids.algorithms.static import maximal_independent_set
+from matroids.matroid import RealLinearMatroid
+from matroids.matroid.uniform import IntUniformMatroid
 
 
 rng = np.random.default_rng(seed=2021)
@@ -23,13 +24,13 @@ def generate_n_by_n_matroid(size: int) -> RealLinearMatroid:
 
 
 plots = {
-    "Performance on $U_{3,n}$": (
+    "Performance on $U_{10,n}$": (
         range(0, 100, 10),
-        lambda n: ExplicitMatroid.uniform(elements=range(n), rank=3),
+        lambda n: IntUniformMatroid(size=n, rank=10),
     ),
     "Performance on free matroid of size n": (
-        range(0, 20, 1),
-        lambda n: ExplicitMatroid.uniform(elements=range(n), rank=n),
+        range(0, 100, 10),
+        lambda n: IntUniformMatroid.free(n),
     ),
     "Performance on 2 x n uniform random matrices": (
         range(0, 1000, 100),

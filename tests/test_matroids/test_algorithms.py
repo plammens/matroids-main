@@ -19,7 +19,8 @@ from matroids.algorithms.static import (
     maximal_independent_set,
     maximal_independent_set_uniform_weights,
 )
-from matroids.matroid import ExplicitMatroid, GraphicalMatroid, RealLinearMatroid
+from matroids.matroid import GraphicalMatroid, RealLinearMatroid
+from matroids.matroid.uniform import IntUniformMatroid
 
 
 def test_maximalIndependentSet_linearMatroid_correct():
@@ -53,7 +54,7 @@ def test_maximalIndependentSet_linearMatroidUniformWeights_correct():
 
 def test_maximalIndependentSet_matroidWithNegativeWeights_negativeWeightsIgnored():
     # free matroid with three elements, one with negative weight
-    matroid = ExplicitMatroid.uniform(range(3), rank=3, weights={0: 1.0, 1: 1.0, 2: -2.0})
+    matroid = IntUniformMatroid(size=3, rank=3, weights={0: 1.0, 1: 1.0, 2: -2.0})
     result = maximal_independent_set(matroid)
     # the maximal independent set shouldn't contain the element with negative weight
     assert result == {0, 1}
