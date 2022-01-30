@@ -140,7 +140,7 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
     algorithm: DynamicMaximalIndependentSetAlgorithm,
 ):
-    graph = nx.gnp_random_graph(n=100, p=0.2)
+    graph = nx.gnp_random_graph(n=50, p=0.2)
     matroid = GraphicalMatroid(graph)
     remover = algorithm(matroid)
 
