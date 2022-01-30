@@ -1,5 +1,4 @@
 """Empirical analysis of the naive dynamic algorithm on real graph datasets."""
-import operator
 from typing import Callable, Generator, List, Mapping, Tuple
 
 import matplotlib.pyplot as plt
@@ -103,20 +102,15 @@ def uniform_weights_dynamic(setup_data: SetupData):
 
 
 plots = {
-    "Single deletion on the FB dataset, uniform weights": (
+    "50 deletions in sequence on the FB dataset, random weights": (
         sorted(networks.keys())[:7],
-        make_setup(uniform_weights=True, number_of_deletions=1),
+        make_setup(uniform_weights=False, number_of_deletions=50),
+        [restart_greedy,  naive_dynamic],
+    ),
+    "50 deletions in sequence on the FB dataset, uniform weights": (
+        sorted(networks.keys())[:7],
+        make_setup(uniform_weights=True, number_of_deletions=50),
         [restart_greedy,  naive_dynamic, uniform_weights_dynamic],
-    ),
-    "Single deletion on the FB dataset, random weights": (
-        sorted(networks.keys())[:7],
-        make_setup(uniform_weights=False, number_of_deletions=1),
-        [restart_greedy,  naive_dynamic],
-    ),
-    "10 deletions in sequence on the FB dataset, random weights": (
-        sorted(networks.keys())[:7],
-        make_setup(uniform_weights=False, number_of_deletions=10),
-        [restart_greedy,  naive_dynamic],
     ),
 }
 
@@ -127,7 +121,7 @@ for title, (n_range, factory, kernels) in plots.items():
         kernels=kernels,
         xlabel="number of edges",
         target_time_per_measurement=0.0,  # avoid repetitions, mutable operations
-        equality_check=None,  # plain equality, can't use np.allclose on sets
+        equality_check=None,  # for speed
     )
     results.plot()
     plt.title(title)
