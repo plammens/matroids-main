@@ -5,16 +5,19 @@ import typing as tp
 T = tp.TypeVar("T", covariant=True)
 
 
-class RandomAccessMutableSet(collections.abc.MutableSet[T]):
+class RandomAccessMutableSet(
+    collections.abc.MutableSet[T], collections.abc.Sequence[T]
+):
     """
     Data structure providing mutable set operations plus fast random access.
 
     The random access is only intended for being able to select an element at random
-    from the set in O(1) time.
+    from the set in O(1) time. This class implements the Sequence interface for
+    compatibility with :function:`random.choice`.
     """
 
     def __init__(self, iterable):
-        self._list = list(iterable)
+        self._list: tp.List[T] = list(iterable)
         self._element_to_index: tp.Dict[T, int] = {
             x: i for i, x in enumerate(self._list)
         }
@@ -31,6 +34,9 @@ class RandomAccessMutableSet(collections.abc.MutableSet[T]):
 
     def __iter__(self) -> tp.Iterator[T]:
         return iter(self._list)
+
+    def __getitem__(self, i) -> T:
+        return self._list[i]
 
     def add(self, value: T) -> None:
         if value not in self._element_to_index:
