@@ -1,11 +1,9 @@
 import dataclasses
 import functools
-import itertools
 import typing as tp
 
 import matplotlib.pyplot as plt
 import matplotx
-import networkx as nx
 import numpy as np
 import tqdm
 
@@ -15,43 +13,27 @@ from matroids.algorithms.dynamic import (
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
 from matroids.algorithms.static import maximal_independent_set
-from matroids.matroid import EdgeType, GraphicalMatroid
+from matroids.matroid import (
+    EdgeType,
+    MutableIntUniformMatroid,
+    MutableMatroid,
+)
 from utils.stopwatch import Stopwatch
 
 
 rng = np.random.default_rng(seed=2022)
 
 
-def generate_graphical_matroid(
+def generate_dummy_matroid(
     size: int, rank: int, uniform_weights: bool = True
-) -> GraphicalMatroid:
-    """Generate an arbitrary graphical matroid of the given size and rank."""
-    # start with an underlying tree/forest with a number of edges equal to the rank
-    graph: nx.Graph = nx.path_graph(n=rank + 1)
-    assert len(graph.edges) == rank
-
-    # add edges until we reach given size
-    # set of all possible edges to add:
-    possible_edges = list(set(itertools.combinations(graph.nodes, r=2)) - graph.edges)
-    rng.shuffle(possible_edges)
-    to_add = size - len(graph.edges)
-    if to_add > len(possible_edges):
-        raise ValueError(
-            f"This method is unable to generate a graphical matroid"
-            f" of size {size} and rank {rank}"
-        )
-    graph.add_edges_from(possible_edges[: size - len(graph.edges)])
-
-    matroid = GraphicalMatroid(graph)
-    assert len(matroid.ground_set) == size
-    assert len(maximal_independent_set(matroid)) == rank
-    return matroid
+) -> MutableMatroid:
+    return MutableIntUniformMatroid(size, rank)
 
 
 def setup(
     size: int, rank: int, *, uniform_weights: bool
-) -> tp.Tuple[GraphicalMatroid, tp.List[EdgeType]]:
-    matroid = generate_graphical_matroid(size, rank, uniform_weights)
+) -> tp.Tuple[MutableMatroid, tp.List[EdgeType]]:
+    matroid = generate_dummy_matroid(size, rank, uniform_weights)
 
     # select the sequence of removals (over all elements of the matroid)
     removal_sequence = list(matroid.ground_set)
@@ -127,18 +109,21 @@ timers = {
 
 experiments = {
     "Total time over exhausting sequence of deletions\n"
-    "uniform weights, fixed size (200), varying rank": ExperimentConfig(
+    f"uniform weights, fixed size ({size}), varying rank": ExperimentConfig(
         x_variable="rank",
-        x_range=range(20, 200, 20),
-        size=200,
-    ),
+        x_range=range(0, size, 20),
+        size=size,
+    )
+    for size in [200]
+} | {
     "Time per deletion over exhausting sequence of deletions\n"
-    "uniform weights, varying size, fixed rank (50)": ExperimentConfig(
+    f"uniform weights, varying size, fixed rank ({rank})": ExperimentConfig(
         x_variable="size",
-        x_range=range(100, 1500, 150),
-        rank=60,
+        x_range=range(100, 1000, 100),
+        rank=rank,
         normalise_by_size=True,
-    ),
+    )
+    for rank in [10, 20, 40]
 }
 
 
