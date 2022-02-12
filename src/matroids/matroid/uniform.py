@@ -2,11 +2,11 @@ import dataclasses
 import functools
 import typing as tp
 
-from .base import Matroid, T
+from .base import Matroid, MutableMatroid
 
 
 @dataclasses.dataclass(eq=False)
-class IntUniformMatroid(Matroid):
+class IntUniformMatroid(Matroid[int]):
     """
     Dummy uniform matroid made up of integer elements.
 
@@ -30,11 +30,35 @@ class IntUniformMatroid(Matroid):
 
     @property
     @functools.cache  # the ground set cannot be reassigned nor mutated, so we can cache
-    def ground_set(self) -> tp.AbstractSet[T]:
+    def ground_set(self) -> tp.AbstractSet[int]:
         return set(range(self.size))
 
-    def is_independent(self, subset: tp.AbstractSet[T]) -> bool:
+    def is_independent(self, subset: tp.AbstractSet[int]) -> bool:
         return len(subset) <= self.rank
 
-    def get_weight(self, element: T) -> float:
+    def get_weight(self, element: int) -> float:
         return self.weights.get(element, 1.0)
+
+
+@dataclasses.dataclass(eq=False, repr=False)
+class MutableIntUniformMatroid(IntUniformMatroid, MutableMatroid[int]):
+    """
+    Mutable version of :class:`IntUniformMatroid`.
+
+    When an element is added or removed, the rank of the matroid is maintained (i.e.
+    the parameter k such that the independent sets are all the sets of size <= k isn't
+    modified).
+    """
+
+    def __post_init__(self):
+        self._elements: tp.Set[int] = set(range(self.size))
+
+    @property
+    def ground_set(self) -> tp.AbstractSet[int]:
+        return self._elements
+
+    def add_element(self, element: int) -> None:
+        self._elements.add(element)
+
+    def remove_element(self, element: int) -> None:
+        self._elements.remove(element)
