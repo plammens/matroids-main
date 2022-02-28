@@ -58,3 +58,25 @@ class DynamicMaximalIndependentSetAlgorithm(metaclass=abc.ABCMeta):
         :return: The new maximal independent set after removing the given element.
         """
         pass
+
+
+class RestartGreedy(DynamicMaximalIndependentSetAlgorithm):
+    """The baseline approach: rerun the greedy algorithm after each update."""
+
+    def __init__(self, matroid: MutableMatroid[T]):
+        super().__init__(matroid)
+        self._current = maximal_independent_set(matroid)
+
+    @property
+    def current(self) -> tp.Set[T]:
+        return self._current
+
+    def add_element(self, element: T, weight: tp.Optional[float] = None) -> tp.Set[T]:
+        self._matroid.add_element(element, weight=weight)
+        self._current = result = maximal_independent_set(self._matroid)
+        return result
+
+    def remove_element(self, element: T) -> tp.Set[T]:
+        self._matroid.remove_element(element)
+        self._current = result = maximal_independent_set(self._matroid)
+        return result
