@@ -48,7 +48,7 @@ def _greedy_core(matroid: Matroid[T], elements_iterable: tp.Iterable[T]) -> tp.S
     :returns: The maximal independent set of the given matroid.
     """
     current_set: tp.Set[T] = set()
-    independence_checker = matroid.is_independent_incremental_stateful(current_set)
+    independence_checker = matroid.stateful_independence_checker(current_set)
 
     # greedy part: keep adding next element if it maintains independence
     for element in elements_iterable:

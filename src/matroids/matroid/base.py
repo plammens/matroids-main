@@ -141,7 +141,7 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
                 return False
 
     @tp.final
-    def is_independent_incremental_stateful(
+    def stateful_independence_checker(
         self, independent_subset: tp.MutableSet[T]
     ) -> StatefulIndependenceChecker:
         """

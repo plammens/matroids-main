@@ -52,7 +52,7 @@ def dynamic_removal_maximal_independent_set(
         )
 
         # rerun greedy from this point onwards
-        independence_checker = matroid.is_independent_incremental_stateful(current_set)
+        independence_checker = matroid.stateful_independence_checker(current_set)
         for j in range(i, len(elements)):
             element = elements[j]
             if element in removed:
@@ -103,7 +103,7 @@ def dynamic_addition_maximal_independent_set_uniform_weights(
     current_set = maximal_independent_set_uniform_weights(matroid)
 
     # since all weights are the same, adding an element is just a matter of independence
-    independence_checker = matroid.is_independent_incremental_stateful(current_set)
+    independence_checker = matroid.stateful_independence_checker(current_set)
     while True:
         new_element = yield current_set
         independence_checker.add_if_independent(new_element)
@@ -144,7 +144,7 @@ def dynamic_removal_maximal_independent_set_uniform_weights(
         current_set = set(pivots)
 
         # rerun greedy algorithm from this point onwards
-        independence_checker = matroid.is_independent_incremental_stateful(current_set)
+        independence_checker = matroid.stateful_independence_checker(current_set)
         while available_elements:
             # select arbitrary pivot element to add to the independent set
             pivot = random.choice(available_elements)

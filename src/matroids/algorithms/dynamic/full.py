@@ -106,7 +106,7 @@ class NaiveDynamic(DynamicMaximalIndependentSetAlgorithm):
         self._indicators: llist.dllist = llist.dllist([False] * len(self._elements))
 
         # use greedy for initial solution
-        independence_checker = matroid.is_independent_incremental_stateful(set())
+        independence_checker = matroid.stateful_independence_checker(set())
         self._current_solution = self._continue_greedy(
             independence_checker,
             self._elements.first,
@@ -197,7 +197,7 @@ class NaiveDynamic(DynamicMaximalIndependentSetAlgorithm):
             the greedy algorithm at the step in which ``until_predicate`` becomes true.
         """
         independent_set: tp.Set[T] = set()
-        checker = self._matroid.is_independent_incremental_stateful(independent_set)
+        checker = self._matroid.stateful_independence_checker(independent_set)
 
         # (this search is linear, but it doesn't matter since we need to re-run
         # part of the greedy algorithm afterwards, which is also linear)
