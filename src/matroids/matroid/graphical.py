@@ -88,5 +88,5 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
 
 def set_weights(graph: nx.Graph, weights: tp.Mapping[EdgeType, float]) -> None:
     """Utility to set weights on a graph in a way compatible with GraphicalMatroid."""
-    for (u, v), w in weights.items():
-        graph[u][v]["weight"] = w
+    for edge, weight in weights.items():
+        graph.edges[edge]["weight"] = weight
