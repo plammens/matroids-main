@@ -7,7 +7,7 @@ import llist
 T = tp.TypeVar("T")
 
 
-class LinkedListSet(tp.Collection[T]):
+class LinkedListSet(tp.MutableSet[T]):
     """
     Mutable data structure consisting of a linked list of unique elements.
 
@@ -17,10 +17,12 @@ class LinkedListSet(tp.Collection[T]):
     """
 
     def __init__(self, elements: tp.Iterable[T]):
-        self._llist = llist.dllist(elements)
-        self._value_to_node: tp.Dict[T, llist.dllistnode] = {
-            node.value: node for node in self._llist.iternodes()
-        }
+        self._llist = ll = llist.dllist()
+        d = {}
+        for x in elements:
+            if x not in d:
+                d[x] = ll.append(x)
+        self._value_to_node: tp.Dict[T, llist.dllistnode] = d
 
     def __repr__(self):
         return f"{type(self).__name__}({list(self)!r})"
@@ -57,7 +59,9 @@ class LinkedListSet(tp.Collection[T]):
         else:
             return iter_nodes(start)
 
-    def iter_values(self, start: tp.Optional[llist.dllistnode] = None) -> tp.Iterator[T]:
+    def iter_values(
+        self, start: tp.Optional[llist.dllistnode] = None
+    ) -> tp.Iterator[T]:
         """
         Iterate over the nodes of the linked list.
 
@@ -66,6 +70,10 @@ class LinkedListSet(tp.Collection[T]):
         :return: An iterator over the values starting at the specified position.
         """
         return map(operator.attrgetter("value"), self.iter_nodes(start=start))
+
+    def find(self, value: T) -> llist.dllistnode:
+        """Get the node corresponding to the given value."""
+        return self._value_to_node[value]
 
     def insert(
         self, position: tp.Optional[llist.dllistnode], value: T
@@ -87,14 +95,14 @@ class LinkedListSet(tp.Collection[T]):
         else:
             return self._value_to_node[value]
 
-    def remove(self, value: T):
-        """Remove the given value; raise KeyError if not in the list."""
-        node = self._value_to_node.pop(value)
-        self._llist.remove(node)
+    def add(self, value: T) -> None:
+        self.insert(position=None, value=value)
 
-    def find(self, value: T) -> llist.dllistnode:
-        """Get the node corresponding to the given value."""
-        return self._value_to_node[value]
+    def discard(self, value: T) -> None:
+        """Remove the given value if present."""
+        node = self._value_to_node.pop(value, None)
+        if node is not None:
+            self._llist.remove(node)
 
 
 def iter_nodes(start: llist.dllistnode) -> tp.Iterator[llist.dllistnode]:
