@@ -26,6 +26,20 @@ from matroids.matroid import GraphicalMatroid, RealLinearMatroid, set_weights
 from matroids.matroid.uniform import IntUniformMatroid
 
 
+DYNAMIC_REMOVAL_ALGORITHMS = [
+    dynamic_removal_maximal_independent_set,
+]
+
+DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS = [
+    dynamic_removal_maximal_independent_set,
+    dynamic_removal_maximal_independent_set_uniform_weights,
+]
+
+FULL_DYNAMIC_ALGORITHMS = [
+    RestartGreedy,
+]
+
+
 def test_maximalIndependentSet_linearMatroid_correct():
     matrix = np.array(
         [
@@ -63,13 +77,16 @@ def test_maximalIndependentSet_matroidWithNegativeWeights_negativeWeightsIgnored
     assert result == {0, 1}
 
 
-def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
+@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_ALGORITHMS)
+def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct(
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
+):
     graph = nx.complete_graph(4)
     weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
     set_weights(graph, weights)
 
     matroid = GraphicalMatroid(graph)
-    remover = dynamic_removal_maximal_independent_set(matroid)
+    remover = algorithm(matroid)
 
     # initial MIS
     maximal = remover.send(None)
@@ -97,13 +114,16 @@ def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
         remover.send(None)
 
 
-@pytest.mark.parametrize(
-    "algorithm",
-    [
-        dynamic_removal_maximal_independent_set,
-        dynamic_removal_maximal_independent_set_uniform_weights,
-    ],
-)
+@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_ALGORITHMS)
+def test_dynamicRemovalMaximalIndependentSet_randomGraph_correct(
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
+):
+    _test_dynamicRemovalMaximalIndependentSet_randomGraph(
+        algorithm, uniform_weights=False
+    )
+
+
+@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS)
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
 ):
@@ -132,17 +152,22 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct
         assert len(maximal) >= min(3, len(matroid.ground_set) - 1)
 
 
-@pytest.mark.parametrize(
-    "algorithm",
-    [
-        dynamic_removal_maximal_independent_set,
-        dynamic_removal_maximal_independent_set_uniform_weights,
-    ],
-)
+@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS)
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
 ):
+    _test_dynamicRemovalMaximalIndependentSet_randomGraph(
+        algorithm, uniform_weights=True
+    )
+
+
+def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
+    algorithm, uniform_weights: bool
+):
     graph = nx.gnp_random_graph(n=50, p=0.2)
+    if not uniform_weights:
+        weights = {edge: random.random() for edge in graph.edges}
+        set_weights(graph, weights)
     matroid = GraphicalMatroid(graph)
     remover = algorithm(matroid)
 
@@ -161,12 +186,7 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
         assert len(result_set) == len(reference_set)
 
 
-@pytest.mark.parametrize(
-    "algorithm",
-    [
-        RestartGreedy,
-    ],
-)
+@pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
 def test_fullDynamicMaximalIndependentSet_basicSequence_correct(
     algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
 ):
