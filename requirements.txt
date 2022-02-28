@@ -1,6 +1,12 @@
+# main requirements
 numpy~=1.21.2
-pytest~=6.2.5
+llist~=0.7.1
+
+# plots
+matplotlib~=3.4.3
 tqdm
 perfplot
 matplotx[all]
-llist
+
+# test requirements
+pytest~=6.2.5
