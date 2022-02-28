@@ -13,6 +13,7 @@ import pytest
 
 from matroids.algorithms.dynamic.full import (
     DynamicMaximalIndependentSetAlgorithm,
+    DynamicMaximalIndependentSetComputer,
     NaiveDynamic,
     RestartGreedy,
 )
@@ -197,7 +198,7 @@ def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
 def test_fullDynamicMaximalIndependentSet_basicSequence1_correct(
-    algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
+    algorithm: tp.Type[DynamicMaximalIndependentSetComputer],
 ):
     graph = nx.complete_graph(4)
     weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
@@ -237,7 +238,7 @@ def test_fullDynamicMaximalIndependentSet_basicSequence1_correct(
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
 def test_fullDynamicMaximalIndependentSet_basicSequence2_correct(
-    algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
+    algorithm: tp.Type[DynamicMaximalIndependentSetComputer],
 ):
     # start with an empty matroid
     matroid = MutableIntUniformMatroid(size=0, rank=3)
@@ -287,7 +288,7 @@ def test_fullDynamicMaximalIndependentSet_basicSequence2_correct(
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
 def test_fullDynamicMaximalIndependentSet_basicSequence3_correct(
-    algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
+    algorithm: DynamicMaximalIndependentSetAlgorithm,
 ):
     graph = nx.Graph()
     matroid = GraphicalMatroid(graph)

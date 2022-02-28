@@ -10,17 +10,20 @@ from matroids.utils.linked_list_set import LinkedListSet, iter_nodes
 from ..static import maximal_independent_set
 
 
-class DynamicMaximalIndependentSetAlgorithm(metaclass=abc.ABCMeta):
+class DynamicMaximalIndependentSetComputer(metaclass=abc.ABCMeta):
     """
     Interface for implementations of the dynamic maximal independent set algorithm.
 
-    Presents three main interaction points:
-     - the constructor/initializer: takes the matroid of which to compute the maximal
-       independent sets, and initializes some internal state
-     - the add method: takes an element to add to the matroid and returns the new
-       maximal independent set
-     - the remove method: takes an element to remove and returns the new maximal
-       independent set
+    Each concrete subclass represents a different algorithm. An instance thereof, a
+    "computer", represents the state of the algorithm applied to a certain matroid.
+
+    The interface presents three main interaction points:
+      - the constructor/initializer: takes the matroid of which to compute the maximal
+        independent sets, and initializes some internal state
+      - the :meth:`add_element` method: takes an element to add to the matroid and
+        returns the new maximal independent set
+      - the :meth:`remove_element` method: takes an element to remove and returns the
+        new maximal independent set
 
     The matroid shouldn't be mutated while it is being used in an instance of this
     class, otherwise undefined behaviour will ensue.
@@ -69,7 +72,11 @@ class DynamicMaximalIndependentSetAlgorithm(metaclass=abc.ABCMeta):
         pass
 
 
-class RestartGreedy(DynamicMaximalIndependentSetAlgorithm):
+# type alias
+DynamicMaximalIndependentSetAlgorithm = tp.Type[DynamicMaximalIndependentSetComputer]
+
+
+class RestartGreedy(DynamicMaximalIndependentSetComputer):
     """The baseline approach: rerun the greedy algorithm after each update."""
 
     def __init__(self, matroid: MutableMatroid[T]):
@@ -93,7 +100,7 @@ class RestartGreedy(DynamicMaximalIndependentSetAlgorithm):
         return result
 
 
-class NaiveDynamic(DynamicMaximalIndependentSetAlgorithm):
+class NaiveDynamic(DynamicMaximalIndependentSetComputer):
     def __init__(self, matroid: MutableMatroid[T]):
         super().__init__(matroid)
 
