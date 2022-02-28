@@ -1,6 +1,5 @@
 """The greedy algorithm for finding the maximal independent set of a matroid"""
 
-import itertools
 import typing as tp
 
 from matroids.matroid import Matroid, T
@@ -13,18 +12,12 @@ def maximal_independent_set(matroid: Matroid[T]) -> tp.Set[T]:
     :param matroid: Weighted matroid of which to find the maximal independent set.
     :return: The maximal independent set of the given matroid.
     """
-    # sort elements in descending order of weight
-    elements = sorted(matroid.ground_set, key=matroid.get_weight, reverse=True)
+    # discard elements with negative weight
+    elements = filter(lambda x: matroid.get_weight(x) >= 0, matroid.ground_set)
+    # sort elements by descending order of weight
+    elements = sorted(elements, key=matroid.get_weight, reverse=True)
 
-    current_set: tp.Set[T] = set()
-    independence_checker = matroid.is_independent_incremental_stateful(current_set)
-    # try to add elements with non-negative weight in descending order of weight
-    for element in itertools.takewhile(lambda x: matroid.get_weight(x) >= 0, elements):
-        if independence_checker.would_be_independent_after_adding(element):
-            independence_checker.add_element(element)
-
-    # the set is modified in-place by the ``independence_checker`` generator
-    return current_set
+    return _greedy_core(matroid, elements)
 
 
 def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> tp.Set[T]:
@@ -38,27 +31,28 @@ def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> tp.Set[T]:
         independent set.
     :return: The maximal independent set of the given matroid.
     """
-    # initialise independence checker starting at empty set
-    checker = matroid.is_independent_incremental_stateful(independent_subset=set())
+    # no need to sort elements as they all have the same positive weight by assumption
+    return _greedy_core(matroid, matroid.ground_set)
 
-    # make a mutable copy of the ground set
-    # start with elements that are independent on their own ("nonzero")
-    elements = set(
-        filter(checker.would_be_independent_after_adding, matroid.ground_set)
-    )
 
-    # while there are elements to be added
-    while elements:
-        # select arbitrary pivot element to add to the independent set
-        pivot = elements.pop()
-        checker.add_element(pivot)
+def _greedy_core(matroid: Matroid[T], elements_iterable: tp.Iterable[T]) -> tp.Set[T]:
+    """
+    Core of the greedy algorithm for computing the maximal independent set.
 
-        # discard elements that can't be added to the independent set now
-        to_remove = [
-            element
-            for element in elements
-            if not checker.would_be_independent_after_adding(element)
-        ]
-        elements.difference_update(to_remove)
+    :param matroid: Matroid whose maximal independent set is to be found.
+    :param elements_iterable: Elements of the matroid given in such an order that
+        running this algorithm with this order yields the maximal independent set
+        (the caller should make sure of this). Usually this would be the elements
+        sorted by descending order of weight.
 
-    return checker.independent_subset
+    :returns: The maximal independent set of the given matroid.
+    """
+    current_set: tp.Set[T] = set()
+    independence_checker = matroid.is_independent_incremental_stateful(current_set)
+
+    # greedy part: keep adding next element if it maintains independence
+    for element in elements_iterable:
+        independence_checker.add_if_independent(element)
+
+    # the set is modified in-place by the ``independence_checker`` generator
+    return current_set
