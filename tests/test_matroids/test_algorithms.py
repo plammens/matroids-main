@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from matroids.algorithms.dynamic import (
-    DynamicMaximalIndependentSetAlgorithm,
+    PartialDynamicMaximalIndependentSetAlgorithm,
     dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
@@ -104,7 +104,7 @@ def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
     ],
 )
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct(
-    algorithm: DynamicMaximalIndependentSetAlgorithm,
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
 ):
     graph = nx.complete_graph(4)
     matroid = GraphicalMatroid(graph)
@@ -139,7 +139,7 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct
     ],
 )
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
-    algorithm: DynamicMaximalIndependentSetAlgorithm,
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
 ):
     graph = nx.gnp_random_graph(n=50, p=0.2)
     matroid = GraphicalMatroid(graph)

@@ -1,4 +1,5 @@
 """The greedy algorithm for finding the maximal independent set of a matroid"""
+
 import itertools
 import typing as tp
 

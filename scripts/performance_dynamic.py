@@ -8,7 +8,7 @@ import numpy as np
 import tqdm
 
 from matroids.algorithms.dynamic import (
-    DynamicMaximalIndependentSetAlgorithm,
+    PartialDynamicMaximalIndependentSetAlgorithm,
     dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
@@ -55,7 +55,7 @@ def time_restart_greedy(*args, **kwargs) -> float:
 
 
 def time_dynamic(
-    algorithm: DynamicMaximalIndependentSetAlgorithm, *args, **kwargs
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm, *args, **kwargs
 ) -> float:
     """Time one run of the naive dynamic algorithm; return time in seconds."""
     matroid, removal_sequence = setup(*args, **kwargs)

@@ -1,17 +1,20 @@
+"""Algorithms for dynamic MIS that handle only additions or only removals."""
+
 import random
 import typing as tp
 
 import numpy as np
 
 from matroids.matroid import MutableMatroid, T
-from .static import maximal_independent_set_uniform_weights
-# type alias for dynamic maximal independent set algorithms:
-# takes a mutable matroid as an argument
-# and returns a generator that accepts elements to add/remove and yields the maximal
-# independent set after removing the given element from the matroid
-from ..utils import RandomAccessMutableSet
+from matroids.utils import RandomAccessMutableSet
+from ..static import maximal_independent_set_uniform_weights
 
-DynamicMaximalIndependentSetAlgorithm = tp.Callable[
+
+# type alias for (partial) dynamic maximal independent set algorithms:
+# takes a mutable matroid as an argument
+# and returns a generator that accepts elements to add (remove) and yields the maximal
+# independent set after adding (removing) the given element from the matroid
+PartialDynamicMaximalIndependentSetAlgorithm = tp.Callable[
     [MutableMatroid[T]], tp.Generator[tp.Set, T, None]
 ]
 
