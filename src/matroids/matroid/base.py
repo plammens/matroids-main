@@ -205,14 +205,19 @@ class MutableMatroid(Matroid[T], metaclass=abc.ABCMeta):
     """Base class for mutable matroid subclasses."""
 
     @abc.abstractmethod
-    def add_element(self, element: T) -> None:
+    def add_element(self, element: T, weight: tp.Optional[float] = None) -> None:
         """
         Add an element to the matroid.
 
         The element will be added to the ground set. Whether the independent sets are
         modified depends on the concrete subclass.
 
+        If the element is already in the matroid, the ground set will remain the same;
+        however if a custom weight is specified, the weight of the element will be
+        updated.
+
         :param element: Element to be added.
+        :param weight: Weight of the new element (default is 1.0).
         """
         pass
 

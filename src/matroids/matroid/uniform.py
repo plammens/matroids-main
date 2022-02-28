@@ -57,8 +57,10 @@ class MutableIntUniformMatroid(IntUniformMatroid, MutableMatroid[int]):
     def ground_set(self) -> tp.AbstractSet[int]:
         return self._elements
 
-    def add_element(self, element: int) -> None:
+    def add_element(self, element: int, weight: tp.Optional[float] = None) -> None:
         self._elements.add(element)
+        if weight is not None:
+            self.weights[element] = weight
 
     def remove_element(self, element: int) -> None:
         self._elements.remove(element)

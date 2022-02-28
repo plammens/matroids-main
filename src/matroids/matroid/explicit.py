@@ -1,8 +1,8 @@
 import dataclasses
 import typing as tp
 
-from .base import MutableMatroid
 from matroids.utils import generate_subsets
+from .base import MutableMatroid
 
 
 @dataclasses.dataclass(eq=False)
@@ -16,7 +16,7 @@ class ExplicitMatroid(MutableMatroid[tp.Any]):
 
     elements: tp.Set[tp.Any]  #: the explicit ground set
     independent_sets: tp.Set[tp.FrozenSet[tp.Any]]
-    weights: tp.MutableMapping[tp.Any, float] = None  #: mapping of elements to weights
+    weights: tp.Optional[tp.MutableMapping[tp.Any, float]] = None
 
     def __post_init__(self):
         # initialise default weights
@@ -63,9 +63,12 @@ class ExplicitMatroid(MutableMatroid[tp.Any]):
     def get_weight(self, element: tp.Any) -> float:
         return self.weights[element]
 
-    def add_element(self, element) -> None:
+    def add_element(self, element, weight: tp.Optional[float] = None) -> None:
         self.elements.add(element)
-        self.weights[element] = 1.0
+        if weight is not None:
+            self.weights[element] = weight
+        elif element not in self.weights:
+            self.weights[element] = 1.0
 
     def remove_element(self, element) -> None:
         self.elements.remove(element)

@@ -1,9 +1,10 @@
 """Algorithms for dynamic MIS that handle both addition and removal of elements."""
 
 import abc
-import typing
+import typing as tp
 
 from matroids.matroid import MutableMatroid, T
+from ..static import maximal_independent_set
 
 
 class DynamicMaximalIndependentSetAlgorithm(metaclass=abc.ABCMeta):
@@ -29,26 +30,27 @@ class DynamicMaximalIndependentSetAlgorithm(metaclass=abc.ABCMeta):
         :param matroid: The matroid in which elements will be added/removed and of which
             to compute the maximal independent set after each update.
         """
-        self.matroid = matroid
+        self._matroid = matroid
 
     @property
     @abc.abstractmethod
-    def current(self) -> typing.Set[T]:
+    def current(self) -> tp.Set[T]:
         """Get the current maximal independent set (without recomputing it)."""
         pass
 
     @abc.abstractmethod
-    def add(self, element) -> typing.Set[T]:
+    def add_element(self, element: T, weight: tp.Optional[float] = None) -> tp.Set[T]:
         """
         Add an element to the matroid and return the new maximal independent set.
 
         :param element: Element to add.
+        :param weight: Optional weight for the new element.
         :return: The new maximal independent set after adding the given element.
         """
         pass
 
     @abc.abstractmethod
-    def remove(self, element) -> typing.Set[T]:
+    def remove_element(self, element) -> tp.Set[T]:
         """
         Remove an element from the matroid and return the new maximal independent set.
 

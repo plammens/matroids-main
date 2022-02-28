@@ -77,8 +77,10 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
         assert isinstance(weight, float)
         return weight
 
-    def add_element(self, element: EdgeType) -> None:
+    def add_element(self, element: EdgeType, weight: tp.Optional[float] = None) -> None:
         self.graph.add_edge(*element)
+        if weight is not None:
+            self.graph.edges[element]["weight"] = weight
 
     def remove_element(self, element: EdgeType) -> None:
         self.graph.remove_edge(*element)

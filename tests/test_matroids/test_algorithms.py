@@ -4,6 +4,7 @@ Tests for the various matroid algorithms in :module:`matroids.algorithms`.
 
 import itertools as itt
 import random
+import typing as tp
 
 import more_itertools as mitt
 import networkx as nx
@@ -11,7 +12,9 @@ import numpy as np
 import pytest
 
 from matroids.algorithms.dynamic import (
+    DynamicMaximalIndependentSetAlgorithm,
     PartialDynamicMaximalIndependentSetAlgorithm,
+    RestartGreedy,
     dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
@@ -19,7 +22,7 @@ from matroids.algorithms.static import (
     maximal_independent_set,
     maximal_independent_set_uniform_weights,
 )
-from matroids.matroid import GraphicalMatroid, RealLinearMatroid
+from matroids.matroid import GraphicalMatroid, RealLinearMatroid, set_weights
 from matroids.matroid.uniform import IntUniformMatroid
 
 
@@ -63,8 +66,7 @@ def test_maximalIndependentSet_matroidWithNegativeWeights_negativeWeightsIgnored
 def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
     graph = nx.complete_graph(4)
     weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
-    for (u, v), w in weights.items():
-        graph[u][v]["weight"] = w
+    set_weights(graph, weights)
 
     matroid = GraphicalMatroid(graph)
     remover = dynamic_removal_maximal_independent_set(matroid)
@@ -81,8 +83,7 @@ def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct():
 
     # remove another element
     maximal = remover.send((0, 1))
-    assert len(maximal) == 3
-    assert (1, 2) not in maximal
+    assert maximal == {(0, 2), (0, 3), (1, 3)}
 
     # remove another element, now only two edges with non-negative weight remain
     maximal = remover.send((1, 3))
