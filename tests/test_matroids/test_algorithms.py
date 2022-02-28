@@ -11,10 +11,13 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from matroids.algorithms.dynamic import (
+from matroids.algorithms.dynamic.full import (
     DynamicMaximalIndependentSetAlgorithm,
-    PartialDynamicMaximalIndependentSetAlgorithm,
+    NaiveDynamic,
     RestartGreedy,
+)
+from matroids.algorithms.dynamic.partial import (
+    PartialDynamicMaximalIndependentSetAlgorithm,
     dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
@@ -22,8 +25,13 @@ from matroids.algorithms.static import (
     maximal_independent_set,
     maximal_independent_set_uniform_weights,
 )
-from matroids.matroid import GraphicalMatroid, RealLinearMatroid, set_weights
-from matroids.matroid.uniform import IntUniformMatroid
+from matroids.matroid import (
+    GraphicalMatroid,
+    IntUniformMatroid,
+    MutableIntUniformMatroid,
+    RealLinearMatroid,
+    set_weights,
+)
 
 
 DYNAMIC_REMOVAL_ALGORITHMS = [
@@ -37,6 +45,7 @@ DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS = [
 
 FULL_DYNAMIC_ALGORITHMS = [
     RestartGreedy,
+    NaiveDynamic,
 ]
 
 
@@ -187,7 +196,7 @@ def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
 
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
-def test_fullDynamicMaximalIndependentSet_basicSequence_correct(
+def test_fullDynamicMaximalIndependentSet_basicSequence1_correct(
     algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
 ):
     graph = nx.complete_graph(4)
@@ -211,19 +220,85 @@ def test_fullDynamicMaximalIndependentSet_basicSequence_correct(
     assert algorithm_instance.add_element((2, 3), weight=-1.0) == current_maximal
 
     # remove another element
-    current_maximal = algorithm_instance.remove_element((0, 1))
-    assert current_maximal == {(0, 2), (0, 3), (1, 3)}
+    assert algorithm_instance.remove_element((0, 1)) == {(0, 2), (0, 3), (1, 3)}
 
     # remove another element, now only two edges with non-negative weight remain
-    current_maximal = algorithm_instance.remove_element((1, 3))
-    assert current_maximal == {(0, 3), (0, 2)}
+    assert algorithm_instance.remove_element((1, 3)) == {(0, 3), (0, 2)}
 
     # re-add an edge
-    current_maximal = algorithm_instance.add_element((0, 1))
-    assert current_maximal == {(0, 1), (0, 2), (0, 3)}
+    assert algorithm_instance.add_element((0, 1)) == {(0, 1), (0, 2), (0, 3)}
 
     # add another edge with greater weight
-    previous_maximal = current_maximal
+    previous_maximal = algorithm_instance.current
     current_maximal = algorithm_instance.add_element((1, 3), weight=2.0)
     assert current_maximal - previous_maximal == {(1, 3)}
     assert len(previous_maximal - current_maximal) == 1
+
+
+@pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
+def test_fullDynamicMaximalIndependentSet_basicSequence2_correct(
+    algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
+):
+    # start with an empty matroid
+    matroid = MutableIntUniformMatroid(size=0, rank=3)
+    algorithm_instance = algorithm(matroid)
+
+    assert algorithm_instance.current == set()
+
+    assert algorithm_instance.add_element(1) == {1}
+
+    # re-adding the same element shouldn't have an effect
+    assert algorithm_instance.add_element(1) == {1}
+
+    assert algorithm_instance.add_element(2) == {1, 2}
+
+    # negative weights should be ignored
+    assert algorithm_instance.add_element(3, weight=-1.0) == {1, 2}
+
+    assert algorithm_instance.add_element(4) == {1, 2, 4}
+
+    # if we add another element, the MIS can't increase, since the rank is 3
+    previous_maximal = algorithm_instance.current
+    current_maximal = algorithm_instance.add_element(5)
+    if current_maximal != previous_maximal:
+        # check that 5 was exchanged for another element
+        assert current_maximal - previous_maximal == {5}
+        assert len(previous_maximal - current_maximal) == 1
+
+    # add another element of greater weight
+    previous_maximal = algorithm_instance.current
+    current_maximal = algorithm_instance.add_element(6, weight=2.0)
+    # now an update is forced; check that 6 was exchanged for another element
+    assert len(current_maximal) == 3
+    assert 6 in current_maximal
+
+    # update the weight of an existing element (3 had negative weight before)
+    current_maximal = algorithm_instance.add_element(3, weight=100.0)
+    assert len(current_maximal) == 3
+    assert 3 in current_maximal
+
+    # remove and update some elements
+    algorithm_instance.remove_element(1)
+    algorithm_instance.remove_element(2)
+    algorithm_instance.remove_element(3)
+    algorithm_instance.add_element(4, weight=-1.0)
+    assert algorithm_instance.current == {5, 6}
+
+
+@pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
+def test_fullDynamicMaximalIndependentSet_basicSequence3_correct(
+    algorithm: tp.Type[DynamicMaximalIndependentSetAlgorithm],
+):
+    graph = nx.Graph()
+    matroid = GraphicalMatroid(graph)
+    algorithm_instance = algorithm(matroid)
+
+    algorithm_instance.add_element((0, 1))
+    algorithm_instance.add_element((0, 2))
+    algorithm_instance.add_element((1, 2))
+
+    # check that when rebuilding the MIS, previous greedy work is remembered
+    # (only elements that were previously selected are selected)
+    previous_maximal = algorithm_instance.current
+    current_maximal = algorithm_instance.add_element((3, 4), weight=0.5)
+    assert current_maximal == previous_maximal | {(3, 4)}
