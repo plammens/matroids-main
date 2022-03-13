@@ -30,9 +30,11 @@ from matroids.matroid import (
     GraphicalMatroid,
     IntUniformMatroid,
     MutableIntUniformMatroid,
+    MutableMatroid,
     RealLinearMatroid,
     set_weights,
 )
+from matroids.utils import RandomAccessMutableSet
 
 
 DYNAMIC_REMOVAL_ALGORITHMS = [
@@ -171,34 +173,9 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
     )
 
 
-def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
-    algorithm, uniform_weights: bool
-):
-    graph = nx.gnp_random_graph(n=50, p=0.2)
-    if not uniform_weights:
-        weights = {edge: random.random() for edge in graph.edges}
-        set_weights(graph, weights)
-    matroid = GraphicalMatroid(graph)
-    remover = algorithm(matroid)
-
-    # select sequence of elements to remove
-    sequence = list(matroid.ground_set)
-    random.shuffle(sequence)
-    sequence.insert(0, None)
-
-    # use the static algorithm as a correct reference for comparison
-    for to_remove in sequence:
-        result_set = remover.send(to_remove)
-        reference_set = maximal_independent_set(matroid)
-        assert to_remove not in result_set
-        assert matroid.is_independent(result_set)
-        # weights are uniform so only need to check size of set to check maximality
-        assert len(result_set) == len(reference_set)
-
-
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
 def test_fullDynamicMaximalIndependentSet_basicSequence1_correct(
-    algorithm: tp.Type[DynamicMaximalIndependentSetComputer],
+    algorithm: DynamicMaximalIndependentSetAlgorithm,
 ):
     graph = nx.complete_graph(4)
     weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
@@ -303,3 +280,113 @@ def test_fullDynamicMaximalIndependentSet_basicSequence3_correct(
     previous_maximal = algorithm_instance.current
     current_maximal = algorithm_instance.add_element((3, 4), weight=0.5)
     assert current_maximal == previous_maximal | {(3, 4)}
+
+
+@pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
+def test_fullDynamicMaximalIndependentSet_randomGraph(
+    algorithm: DynamicMaximalIndependentSetAlgorithm,
+):
+    _test_fullDynamicMaximalIndependentSet_randomGraph(algorithm)
+
+
+def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm, uniform_weights: bool
+):
+    matroid = _random_graphical_matroid(uniform_weights)
+    remover = algorithm(matroid)
+
+    # select sequence of elements to remove
+    sequence = list(matroid.ground_set)
+    random.shuffle(sequence)
+    sequence.insert(0, None)
+
+    # use the static algorithm as a correct reference for comparison
+    for to_remove in sequence:
+        _check_removal(remover.send, matroid, to_remove)
+
+
+def _test_fullDynamicMaximalIndependentSet_randomGraph(
+    algorithm: DynamicMaximalIndependentSetAlgorithm, uniform_weights: bool = False
+):
+    matroid = _random_graphical_matroid(uniform_weights)
+    algorithm_instance = algorithm(matroid)
+
+    # store elements as a sequence for use with random.choice
+    possible_elements_to_add = list(matroid.ground_set)
+    possible_elements_to_remove = RandomAccessMutableSet(matroid.ground_set)
+
+    # perform a certain number of additions / deletions at random
+    for _ in range(100):
+        action = random.choice(["add", "remove"])
+        if action == "add":
+            to_add = random.choice(possible_elements_to_add)
+            weight = random.uniform(-1.0, 1.0)
+            _check_addition(algorithm_instance.add_element, matroid, to_add, weight)
+            possible_elements_to_remove.add(to_add)
+        elif action == "remove":
+            to_remove = random.choice(possible_elements_to_remove)
+            _check_removal(algorithm_instance.remove_element, matroid, to_remove)
+            possible_elements_to_remove.remove(to_remove)
+        else:
+            assert False
+
+
+def _random_graphical_matroid(uniform_weights: bool):
+    graph = nx.gnp_random_graph(n=50, p=0.2)
+    if not uniform_weights:
+        weights = {edge: random.uniform(-1.0, 1.0) for edge in graph.edges}
+        set_weights(graph, weights)
+    return GraphicalMatroid(graph)
+
+
+def _check_addition(
+    adder_function: tp.Callable[[tp.Any, float], tp.Set],
+    matroid: MutableMatroid,
+    element_to_add,
+    weight: float,
+):
+    """
+    Compare an addition algorithm with the static algorithm for correctness.
+
+    :param adder_function: Function taking the element to add and its weight,
+        which adds the element to the matroid and returns the updated solution.
+    :param matroid: Matroid under test.
+    :param element_to_add: Element to add.
+    :param weight: Weight of the element to add.
+    """
+    previous_ground_set = set(matroid.ground_set)
+    result_set = adder_function(element_to_add, weight)
+    assert matroid.ground_set == previous_ground_set | {element_to_add}
+
+    # compute correct solution
+    reference_set = maximal_independent_set(matroid)
+
+    assert matroid.is_independent(result_set)
+    assert len(result_set) == len(reference_set)
+    assert matroid.total_weight(result_set) == matroid.total_weight(reference_set)
+
+
+def _check_removal(
+    remover_function: tp.Callable[[tp.Any], tp.Set],
+    matroid: MutableMatroid,
+    element_to_remove,
+):
+    """
+    Compare a removal algorithm with the static algorithm for correctness.
+
+    :param remover_function: Function taking the element to add and its weight,
+        which adds the element to the matroid and returns the updated solution.
+    :param matroid: Matroid under test.
+    :param element_to_remove: Element to remove.
+    """
+    previous_ground_set = set(matroid.ground_set)
+    result_set = remover_function(element_to_remove)
+    assert matroid.ground_set == previous_ground_set - {element_to_remove}
+
+    # compute correct solution
+    reference_set = maximal_independent_set(matroid)
+
+    assert element_to_remove not in result_set
+    assert matroid.is_independent(result_set)
+    assert len(result_set) == len(reference_set)
+    assert matroid.total_weight(result_set) == matroid.total_weight(reference_set)
