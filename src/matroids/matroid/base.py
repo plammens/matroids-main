@@ -200,6 +200,17 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
         """
         return 1.0
 
+    def total_weight(self, subset: tp.AbstractSet[T]) -> float:
+        """
+        Utility to compute the total weight of a subset of elements.
+
+        :param subset: Subset of element of the ground set. Behaviour is undefined if
+            this is not a set (contains duplicates) or is not a subset of the ground
+            set of this matroid.
+        :return: The sum of the weights of the elements in the given subset.
+        """
+        return sum(map(self.get_weight, subset))
+
 
 class MutableMatroid(Matroid[T], metaclass=abc.ABCMeta):
     """Base class for mutable matroid subclasses."""
