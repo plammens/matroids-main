@@ -68,6 +68,7 @@ class DynamicMaximalIndependentSetComputer(metaclass=abc.ABCMeta):
 
         :param element: Element to remove.
         :return: The new maximal independent set after removing the given element.
+        :raises: KeyError if ``element`` is not in the matroid.
         """
         pass
 

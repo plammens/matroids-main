@@ -83,7 +83,11 @@ class GraphicalMatroid(MutableMatroid[EdgeType]):
             self.graph.edges[element]["weight"] = weight
 
     def remove_element(self, element: EdgeType) -> None:
-        self.graph.remove_edge(*element)
+        try:
+            self.graph.remove_edge(*element)
+        except nx.NetworkXError:
+            # element not in matroid
+            raise KeyError(element) from None
 
 
 def set_weights(graph: nx.Graph, weights: tp.Mapping[EdgeType, float]) -> None:

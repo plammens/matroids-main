@@ -241,5 +241,6 @@ class MutableMatroid(Matroid[T], metaclass=abc.ABCMeta):
         containing it.
 
         :param element: Element to be removed.
+        :raises KeyError: If ``element`` is not in the matroid.
         """
         pass
