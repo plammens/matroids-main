@@ -149,7 +149,7 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
 
         # insert element in sorted position; meanwhile reconstruct independent set
         independence_checker, element_node, indicator_node = self._reconstruct_greedy(
-            until=lambda e: get_weight(e) < weight
+            until=lambda e: get_weight(e) <= weight
         )
         element_node = self._elements.insert(position=element_node, value=new_element)
         indicator_node = self._indicators.insert(False, indicator_node)
