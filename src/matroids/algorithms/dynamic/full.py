@@ -1,6 +1,7 @@
 """Algorithms for dynamic MIS that handle both addition and removal of elements."""
 
 import abc
+import math
 import typing as tp
 
 import llist
@@ -155,7 +156,9 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
             independence_checker.add_element(new_element)
             # already dealt with new_element as a special case; continue with the next
             return self._continue_greedy(
-                independence_checker, elements_start=element_node.next
+                independence_checker,
+                elements_start=element_node.next,
+                size_bound=len(self._current_solution) + 1,
             )
 
     def remove_element(self, element_to_remove, /) -> tp.FrozenSet[T]:
@@ -173,7 +176,11 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         element_node = element_node.next
         self._elements.remove(element_to_remove)
 
-        return self._continue_greedy(independence_checker, elements_start=element_node)
+        return self._continue_greedy(
+            independence_checker,
+            elements_start=element_node,
+            size_bound=len(self._current_solution),
+        )
 
     def _reconstruct_greedy(
         self, until: tp.Callable[[T], bool]
@@ -211,12 +218,15 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         self,
         independence_checker: MutableMatroid.StatefulIndependenceChecker,
         elements_start: llist.dllistnode,
+        size_bound: float = math.inf,
     ) -> tp.FrozenSet[T]:
         """Run the greedy algorithm from the given element onwards."""
+        independent_set = independence_checker.independent_subset
         for element in self._elements.iter_values(start=elements_start):
-            independence_checker.add_if_independent(element)
+            if independence_checker.would_be_independent_after_adding(element):
+                independence_checker.add_element(element)
+                if len(independent_set) >= size_bound:
+                    break
 
-        self._current_solution = solution = frozenset(
-            independence_checker.independent_subset
-        )
+        self._current_solution = solution = frozenset(independent_set)
         return solution
