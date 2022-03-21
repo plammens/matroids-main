@@ -19,7 +19,6 @@ from matroids.algorithms.dynamic.full import (
 )
 from matroids.algorithms.dynamic.partial import (
     PartialDynamicMaximalIndependentSetAlgorithm,
-    dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
 from matroids.algorithms.static import (
@@ -38,11 +37,9 @@ from matroids.utils import RandomAccessMutableSet
 
 
 DYNAMIC_REMOVAL_ALGORITHMS = [
-    dynamic_removal_maximal_independent_set,
 ]
 
 DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS = [
-    dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 ]
 
