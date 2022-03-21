@@ -58,7 +58,7 @@ i.e., the source files are used directly without first copying them to the defau
 
 ## Running scripts
 
-*Follow the [setup](#Setup) instructions first.*
+*Follow the [setup](#setup) instructions first.*
 
 To run a script in the `scripts` directory, do the following from the repository root:
 
