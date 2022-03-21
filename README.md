@@ -5,7 +5,18 @@ set E undergoes changes, i.e., elements are either inserted or deleted from the 
 There are two main approaches to attack this problem. The first one is based on the idea of maintaining a random permutation of the ground set, while the second one runs the greedy algorithms from scratch and exploits the stability of matroids. 
 The goal is to empirically evaluate the performance of these two approaches, and understand whether randomness helps in improving the running time for this problem.
 
-## Repository setup
+## Repository structure
+
+The basic file structure is the following:
+
+- `src/`: Source root for the main Python packages that provide the functionality of the project (e.g. matroid classes, algorithms).
+- `scripts/`: Contains individual Python scripts for e.g. performing execution time experiments.
+  - `utils`: Python package containing miscellaneous utilities used by the scripts. The reason it's included under `scripts/` and not in `src/` is to avoid having to export it as a top-level package during installation, because Python automatically adds the `scripts/` directory to the `PYTHONPATH` when invoking a script like this: `python scripts/some_script.py`.
+- `tests/`: Source root for test modules to be run with `pytest`.
+- `setup.py`: Contains project metadata such as dependencies and enables installation through `pip install`.
+
+
+## Setup
 
 ### Activate a virtual Python environment (optional)
 
