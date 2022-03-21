@@ -12,6 +12,7 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
       <excludeFolder url="file://$MODULE_DIR$/downloads" />
+      <excludeFolder url="file://$MODULE_DIR$/testvenv" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (l4-project-matroids-main)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

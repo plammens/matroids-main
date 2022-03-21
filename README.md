@@ -21,46 +21,44 @@ The basic file structure is the following:
 
 ## Setup
 
-### Activate a virtual Python environment (optional)
+### Basic requirements
+
+- **Python 3.9 or later** –
+this repository has been written and tested in CPython 3.9.0
+
+### [Optional] Step 0: Activate a virtual Python environment
 
 It is strongly recommended that you activate an isolated Python environment
-so that the dependencies you install for this project don't interfere with
+so that the packages you install for this project don't interfere with
 your system interpreter.
 
-For example, to create a [`virtualenv`](https://virtualenv.pypa.io/en/latest/):
+For example, to create a Python 3.9 environment with [`virtualenv`](https://virtualenv.pypa.io/en/latest/):
 ```bash
-virtualenv venv
+virtualenv venv --python=py39
 ```
-Then activate it according to [platform-specific instructions](https://virtualenv.pypa.io/en/latest/user_guide.html#activators);
-e.g. on bash:
+Then activate it according to [platform-specific instructions](https://virtualenv.pypa.io/en/latest/user_guide.html#activators).
+
+For more detailed instructions, see [here](https://virtualenv.pypa.io/en/latest/user_guide.html).
+
+
+### Step 1: Installation
+
+To install the main packages, run the following from the repository root:
 ```bash
-source venv/bin/activate
+pip install -e .[all]
 ```
+This automatically installs the required dependencies for the main packages.
 
-### Install dependencies
+The `[all]` syntax indicates to install all extra dependencies, namely for tests and scripts.
+Alternatively one can specify, for example, `[tests,scripts]`, only `[tests]`, or nothing at all (`pip install -e .`), but then only the corresponding components will work.
+(The lack of whitespace in this syntax is important.)
 
-To install the required Python packages for development, run
-```bash
-pip install -r requirements.txt
-```
-
-
-### PYTHONPATH
-
-If running everything from source (i.e. without installing anything), the correct value of the PYTHONPATH environment variable should be set up first.
-It suffices to prepend `src` to PYTHONPATH:
-
-- On *nix:
-    ```bash
-    export PYTHONPATH=src:$PYTHONPATH
-    ```
-- On Windows:
-    ```cmd
-    set PYTHONPATH=src;%PYTHONPATH%
-    ```
-  
+The `-e` flag is optional; it makes the installation editable:
+i.e., the source files are used directly without first copying them to the default installation location.
 
 ## Running scripts
+
+*Follow the [setup](#Setup) instructions first.*
 
 To run a script in the `scripts` directory, do the following from the repository root:
 
@@ -68,11 +66,12 @@ To run a script in the `scripts` directory, do the following from the repository
 python -O scripts/some_script.py
 ```
 
-If the above setup steps have been followed, this should run fine.
 The `-O` flag is to disable assertions (to get the most accurate performance measurements).
 
 
 ## Tests
+
+*Follow the [setup](#Setup) instructions first.*
 
 Tests are written using the `pytest` framework.
 To run automated tests, do:
