@@ -6,7 +6,7 @@ import typing as tp
 import llist
 
 from matroids.matroid import MutableMatroid, T
-from matroids.utils.linked_list_set import LinkedListSet, iter_nodes
+from matroids.utils.linked_list_set import LinkedListSet
 from ..static import maximal_independent_set
 
 
@@ -110,15 +110,10 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         elements = sorted(elements, key=matroid.get_weight, reverse=True)
         self._elements: LinkedListSet[T] = LinkedListSet(elements)
 
-        # parallel list of indicators (whether each element was added to the MIS)
-        self._indicators: llist.dllist = llist.dllist([False] * len(self._elements))
-
         # use greedy for initial solution
         independence_checker = matroid.stateful_independence_checker(set())
         self._current_solution = self._continue_greedy(
-            independence_checker,
-            self._elements.first,
-            self._indicators.first,
+            independence_checker, self._elements.first
         )
 
     @property
@@ -148,23 +143,19 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
             return self._current_solution
 
         # insert element in sorted position; meanwhile reconstruct independent set
-        independence_checker, element_node, indicator_node = self._reconstruct_greedy(
+        independence_checker, element_node = self._reconstruct_greedy(
             until=lambda e: get_weight(e) <= weight
         )
         element_node = self._elements.insert(position=element_node, value=new_element)
-        indicator_node = self._indicators.insert(False, indicator_node)
 
         # possible shortcut
         if not independence_checker.would_be_independent_after_adding(new_element):
             return self._current_solution
         else:
             independence_checker.add_element(new_element)
-            indicator_node.value = True
             # already dealt with new_element as a special case; continue with the next
             return self._continue_greedy(
-                independence_checker,
-                elements_start=element_node.next,
-                indicators_start=indicator_node.next,
+                independence_checker, elements_start=element_node.next
             )
 
     def remove_element(self, element_to_remove, /) -> tp.Set[T]:
@@ -176,25 +167,17 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
             return self._current_solution
 
         # find sorted position of deleted element; meanwhile reconstruct independent set
-        independence_checker, element_node, indicator_node = self._reconstruct_greedy(
+        independence_checker, element_node = self._reconstruct_greedy(
             until=lambda e: e == element_to_remove
         )
-        indicator_node_to_remove = indicator_node
-        element_node, indicator_node = element_node.next, indicator_node.next
+        element_node = element_node.next
         self._elements.remove(element_to_remove)
-        self._indicators.remove(indicator_node_to_remove)
 
-        return self._continue_greedy(
-            independence_checker,
-            elements_start=element_node,
-            indicators_start=indicator_node,
-        )
+        return self._continue_greedy(independence_checker, elements_start=element_node)
 
     def _reconstruct_greedy(
         self, until: tp.Callable[[T], bool]
-    ) -> tp.Tuple[
-        MutableMatroid.StatefulIndependenceChecker, llist.dllistnode, llist.dllistnode
-    ]:
+    ) -> tp.Tuple[MutableMatroid.StatefulIndependenceChecker, llist.dllistnode]:
         """
         Reconstruct the state of the greedy algorithm up to a certain point.
 
@@ -204,37 +187,34 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         :returns: The independence checker object and the list position as they were in
             the greedy algorithm at the step in which ``until_predicate`` becomes true.
         """
+        previous_solution = self._current_solution
+
         independent_set: tp.Set[T] = set()
         checker = self._matroid.stateful_independence_checker(independent_set)
 
         # (this search is linear, but it doesn't matter since we need to re-run
         # part of the greedy algorithm afterwards, which is also linear)
-        for element_node, indicator_node in zip(
-            self._elements.iter_nodes(), self._indicators.iternodes()
-        ):
+        for element_node in self._elements.iter_nodes():
             element = element_node.value
             if until(element):
                 break
-            if indicator_node.value:
+
+            if element in previous_solution:
                 checker.add_element(element)
         else:
             # in case there are no elements or position is the end of the list
             element_node, indicator_node = None, None
 
-        return checker, element_node, indicator_node
+        return checker, element_node
 
     def _continue_greedy(
         self,
         independence_checker: MutableMatroid.StatefulIndependenceChecker,
         elements_start: llist.dllistnode,
-        indicators_start: llist.dllistnode,
     ) -> tp.Set[T]:
         """Run the greedy algorithm from the given element onwards."""
-        for element, indicator_node in zip(
-            self._elements.iter_values(start=elements_start),
-            iter_nodes(indicators_start),
-        ):
-            indicator_node.value = independence_checker.add_if_independent(element)
+        for element in self._elements.iter_values(start=elements_start):
+            independence_checker.add_if_independent(element)
 
         self._current_solution = solution = independence_checker.independent_subset
         return solution  # noqa
