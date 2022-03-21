@@ -40,14 +40,14 @@ class DynamicMaximalIndependentSetComputer(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def current(self) -> tp.Set[T]:
+    def current(self) -> tp.FrozenSet[T]:
         """Get the current maximal independent set (without recomputing it)."""
         pass
 
     @abc.abstractmethod
     def add_element(
         self, element: T, /, weight: tp.Optional[float] = None
-    ) -> tp.Set[T]:
+    ) -> tp.FrozenSet[T]:
         """
         Add an element to the matroid and return the new maximal independent set.
 
@@ -62,7 +62,7 @@ class DynamicMaximalIndependentSetComputer(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def remove_element(self, element, /) -> tp.Set[T]:
+    def remove_element(self, element, /) -> tp.FrozenSet[T]:
         """
         Remove an element from the matroid and return the new maximal independent set.
 
@@ -117,12 +117,12 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         )
 
     @property
-    def current(self) -> tp.Set[T]:
+    def current(self) -> tp.FrozenSet[T]:
         return self._current_solution
 
     def add_element(
         self, new_element: T, /, weight: tp.Optional[float] = None
-    ) -> tp.Set[T]:
+    ) -> tp.FrozenSet[T]:
         get_weight = self._matroid.get_weight  # for efficiency
 
         # shortcuts when the element is already in the matroid
@@ -158,7 +158,7 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
                 independence_checker, elements_start=element_node.next
             )
 
-    def remove_element(self, element_to_remove, /) -> tp.Set[T]:
+    def remove_element(self, element_to_remove, /) -> tp.FrozenSet[T]:
         self._matroid.remove_element(element_to_remove)
 
         # shortcut if element is not a pivot
@@ -211,10 +211,12 @@ class NaiveDynamic(DynamicMaximalIndependentSetComputer):
         self,
         independence_checker: MutableMatroid.StatefulIndependenceChecker,
         elements_start: llist.dllistnode,
-    ) -> tp.Set[T]:
+    ) -> tp.FrozenSet[T]:
         """Run the greedy algorithm from the given element onwards."""
         for element in self._elements.iter_values(start=elements_start):
             independence_checker.add_if_independent(element)
 
-        self._current_solution = solution = independence_checker.independent_subset
-        return solution  # noqa
+        self._current_solution = solution = frozenset(
+            independence_checker.independent_subset
+        )
+        return solution

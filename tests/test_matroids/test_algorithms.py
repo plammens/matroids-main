@@ -340,7 +340,7 @@ def _random_graphical_matroid(uniform_weights: bool):
 
 
 def _check_addition(
-    adder_function: tp.Callable[[tp.Any, float], tp.Set],
+    adder_function: tp.Callable[[tp.Any, float], tp.AbstractSet],
     matroid: MutableMatroid,
     element_to_add,
     weight: float,
@@ -367,7 +367,7 @@ def _check_addition(
 
 
 def _check_removal(
-    remover_function: tp.Callable[[tp.Any], tp.Set],
+    remover_function: tp.Callable[[tp.Any], tp.AbstractSet],
     matroid: MutableMatroid,
     element_to_remove,
 ):
