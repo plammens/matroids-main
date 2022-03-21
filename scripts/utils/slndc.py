@@ -2,8 +2,8 @@
 import pathlib
 import tarfile
 import typing as tp
-import networkx as nx
 
+import networkx as nx
 from utils.download import ensure_downloaded
 
 
