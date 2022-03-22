@@ -7,7 +7,7 @@ from matroids.matroid import Matroid, T
 
 def maximal_independent_set(matroid: Matroid[T]) -> tp.Set[T]:
     """
-    Use the greedy algorithm to find the maximal independent set of a matroid.
+    Use the greedy algorithm to find an independent set of maximum weight of a matroid.
 
     :param matroid: Weighted matroid of which to find the maximal independent set.
     :return: The maximal independent set of the given matroid.
@@ -22,7 +22,7 @@ def maximal_independent_set(matroid: Matroid[T]) -> tp.Set[T]:
 
 def maximal_independent_set_uniform_weights(matroid: Matroid[T]) -> tp.Set[T]:
     """
-    Compute the maximal independent set under the assumption that all weights are equal.
+    Compute an independent set of maximum weight assuming uniform weights.
 
     Assumes as a precondition that the weight of all elements is equal, i.e. all
     elements have the same positive weight.
