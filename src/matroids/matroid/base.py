@@ -54,9 +54,7 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
         """
         pass
 
-    def is_independent_incremental(
-        self, independent_subset: tp.AbstractSet[T], new_element: T
-    ) -> bool:
+    def is_independent_incremental(self, independent_subset: tp.AbstractSet[T], new_element: T) -> bool:
         """
         Special implementation of the independence check for subsets of the form S + e.
 
@@ -93,9 +91,7 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
         for details.
         """
 
-        def __init__(
-            self, matroid: "Matroid", independent_subset: tp.MutableSet[T]
-        ):
+        def __init__(self, matroid: "Matroid", independent_subset: tp.MutableSet[T]):
             self.matroid = matroid
             # current independent subset
             self.independent_subset = independent_subset
@@ -141,9 +137,7 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
                 return False
 
     @tp.final
-    def stateful_independence_checker(
-        self, independent_subset: tp.MutableSet[T]
-    ) -> StatefulIndependenceChecker:
+    def stateful_independence_checker(self, independent_subset: tp.MutableSet[T]) -> StatefulIndependenceChecker:
         """
         Special stateful implementation of an incremental independence check.
 
