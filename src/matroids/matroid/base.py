@@ -33,13 +33,13 @@ class Matroid(tp.Generic[T], metaclass=abc.ABCMeta):
         """
         pass
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """As per the Python convention, whether the matroid is nonempty."""
         return bool(self.ground_set)
 
     @property
     @tp.final
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Whether the matroid is empty."""
         return not bool(self)
 
