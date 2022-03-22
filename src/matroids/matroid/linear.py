@@ -1,6 +1,7 @@
 import dataclasses
 import functools
 import typing as tp
+
 import numpy as np
 
 from .base import Matroid
@@ -63,6 +64,9 @@ class RealLinearMatroid(Matroid[int]):
     def is_independent(self, subset: tp.AbstractSet[int]) -> bool:
         # fetch the given columns and check whether the resulting matrix is full-rank
         columns_subset = self.get_matrix(subset)
+        # shortcut if the number of vectors is greater than the dimension of R^n
+        if columns_subset.shape[1] > columns_subset.shape[0]:
+            return False
         return np.linalg.matrix_rank(columns_subset) == columns_subset.shape[1]
 
     def get_weight(self, element: int) -> float:
