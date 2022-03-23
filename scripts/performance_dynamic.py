@@ -1,11 +1,10 @@
-import dataclasses
 import functools
+import random
 import typing as tp
 
 import matplotlib.pyplot as plt
 import matplotx
 import numpy as np
-import tqdm
 
 from matroids.algorithms.dynamic import (
     DynamicMaximalIndependentSetAlgorithm,
@@ -19,6 +18,7 @@ from matroids.matroid import (
     MutableIntUniformMatroid,
     MutableMatroid,
 )
+from scripts.utils.performance_plot import PerformanceExperiment
 from utils.stopwatch import Stopwatch
 
 
@@ -26,13 +26,14 @@ rng = np.random.default_rng(seed=2022)
 
 
 def generate_dummy_matroid(
-    size: int, rank: int, uniform_weights: bool = True
+    size: int, rank: int, uniform_weights: bool = False
 ) -> MutableMatroid:
-    return MutableIntUniformMatroid(size, rank)
+    weights = {} if uniform_weights else {i: random.random() for i in range(size)}
+    return MutableIntUniformMatroid(size, rank, weights)
 
 
 def setup(
-    size: int, rank: int, *, uniform_weights: bool
+    size: int, rank: int, *, uniform_weights: bool = True
 ) -> tp.Tuple[MutableMatroid, tp.List[EdgeType]]:
     matroid = generate_dummy_matroid(size, rank, uniform_weights)
 
@@ -86,31 +87,6 @@ def time_full_dynamic(
     return stopwatch.measurement
 
 
-@dataclasses.dataclass(frozen=True)
-class ExperimentConfig:
-    x_variable: tp.Literal["size", "rank"]
-    x_range: tp.Sequence[int]
-    size: int = None
-    rank: int = None
-    uniform_weights: bool = True
-
-    repeats: int = 5
-    normalise_by_size: bool = False
-
-    def __iter__(self) -> tp.Iterable[tp.Dict[str, tp.Any]]:
-        """Iterate over the sequence of algorithm inputs."""
-        for x in self.x_range:
-            yield {
-                "size": self.size,
-                "rank": self.rank,
-                self.x_variable: x,  # overrides one of the above
-                "uniform_weights": self.uniform_weights,
-            }
-
-    def __len__(self):
-        return len(self.x_range)
-
-
 timers = {
     "restart_greedy": time_restart_greedy,
     "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
@@ -120,58 +96,41 @@ timers = {
 }
 
 
-experiments = {
-    "Total time over exhausting sequence of deletions\n"
-    f"uniform weights, fixed size ({size}), varying rank": ExperimentConfig(
-        x_variable="rank",
-        x_range=range(0, size, 20),
-        size=size,
+
+rank_experiments = [
+    PerformanceExperiment(
+        title="Total time over exhausting sequence of removals\n"
+        f"uniform weights, fixed size ({size}), varying rank",
+        timer_functions=timers,
+        x_name="rank",
+        x_range=np.linspace(0, size, num=10, dtype=int),
+        fixed_variables={"size": size},
     )
     for size in [200]
-} | {
-    "Time per deletion over exhausting sequence of deletions\n"
-    f"uniform weights, varying size, fixed rank ({rank})": ExperimentConfig(
-        x_variable="size",
-        x_range=range(100, 1000, 100),
-        rank=rank,
-        normalise_by_size=True,
-    )
-    for rank in [10, 20, 40]
-}
+]
 
+size_experiments = [
+    PerformanceExperiment(
+        title="Time per deletion over exhausting sequence of removals\n"
+        f"uniform weights, varying size, fixed rank ({rank})",
+        timer_functions=timers,
+        x_name="size",
+        x_range=np.linspace(100, 1000, num=10, dtype=int),
+        fixed_variables={"rank": rank},
+    )
+    for rank in [10, 20, 30]
+]
 
 plt.style.use(matplotx.styles.dufte)
 
-for title, config in experiments.items():
-    times = np.full(
-        shape=(len(timers), len(config.x_range), config.repeats), fill_value=np.nan
-    )
+for experiment in rank_experiments:
+    experiment.measure_and_show()
 
-    for j, input_data in enumerate(tqdm.tqdm(config)):
-        for i, (algorithm_name, timer) in enumerate(timers.items()):
-            for k in range(config.repeats):
-                times[i, j, k] = timer(**input_data)
+for experiment in size_experiments:
+    measurements = experiment.measure_performance()
+    for label, times in measurements.items():
+        times /= experiment.x_range[:, np.newaxis]
 
-    if config.normalise_by_size:
-        times /= (
-            np.array(config.x_range)[np.newaxis, :, np.newaxis]
-            if config.x_variable == "size"
-            else config.size
-        )
-
-    means = times.mean(axis=-1)
-    stds = times.std(axis=-1)
-
-    plt.suptitle(title)
-    plt.xlabel(config.x_variable)
-    plt.ylabel("time (s)")
-
-    for i, algorithm_name in enumerate(timers):
-        plt.errorbar(
-            config.x_range, means[i], yerr=stds[i], marker=".", label=algorithm_name
-        )
-
-    plt.gca().set_ylim(bottom=0)
-    plt.legend()
-    plt.tight_layout()
+    fig, ax = plt.subplots()
+    experiment.plot_performance(ax, measurements)
     plt.show()
