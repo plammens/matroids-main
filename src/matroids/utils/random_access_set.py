@@ -49,7 +49,7 @@ class RandomAccessMutableSet(
         if index is not None:
             # move last element into the newly created void
             self._list[index] = last = self._list[-1]
-            del self._list[-1]
+            self._list.pop()
 
             # update element to index mapping
             self._element_to_index[last] = index
