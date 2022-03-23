@@ -1,4 +1,5 @@
 """Script to generate some performance graphs for the greedy algorithm."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import perfplot

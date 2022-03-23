@@ -1,3 +1,7 @@
+"""
+Performance check for matroids.utils.random_access_set.RandomAccessMutableSet.
+"""
+
 import operator
 import random
 from typing import Set, Tuple
@@ -36,11 +40,11 @@ def random_access_set_remove(setup_data: SetupData):
 
 
 results = perfplot.bench(
-    kernels=[set_remove, random_access_set_remove],
     setup=setup,
+    kernels=[set_remove, random_access_set_remove],
     n_range=list(range(100, 10000, 100)),
     xlabel="size",
-    target_time_per_measurement=0.0,
+    target_time_per_measurement=0.0,  # working with mutable data; can't repeat
     equality_check=operator.eq,
 )
 results.plot()

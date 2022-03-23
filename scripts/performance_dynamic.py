@@ -8,8 +8,9 @@ import numpy as np
 import tqdm
 
 from matroids.algorithms.dynamic import (
+    DynamicMaximalIndependentSetAlgorithm,
+    NaiveDynamic,
     PartialDynamicMaximalIndependentSetAlgorithm,
-    dynamic_removal_maximal_independent_set,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
 from matroids.algorithms.static import maximal_independent_set
@@ -54,10 +55,10 @@ def time_restart_greedy(*args, **kwargs) -> float:
     return stopwatch.measurement
 
 
-def time_dynamic(
+def time_partial_dynamic(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm, *args, **kwargs
 ) -> float:
-    """Time one run of the naive dynamic algorithm; return time in seconds."""
+    """Time one run of the given dynamic algorithm; return time in seconds."""
     matroid, removal_sequence = setup(*args, **kwargs)
 
     # start generator (only want to time dynamic part)
@@ -67,6 +68,20 @@ def time_dynamic(
     with Stopwatch() as stopwatch:
         for element in removal_sequence:
             remover.send(element)
+
+    return stopwatch.measurement
+
+
+def time_full_dynamic(
+    algorithm: DynamicMaximalIndependentSetAlgorithm, *args, **kwargs
+):
+    """Time one run of the given dynamic algorithm; return time in seconds."""
+    matroid, removal_sequence = setup(*args, **kwargs)
+    algorithm_instance = algorithm(matroid)
+
+    with Stopwatch() as stopwatch:
+        for element in removal_sequence:
+            algorithm_instance.remove_element(element)
 
     return stopwatch.measurement
 
@@ -98,11 +113,9 @@ class ExperimentConfig:
 
 timers = {
     "restart_greedy": time_restart_greedy,
-    "naive_dynamic": functools.partial(
-        time_dynamic, dynamic_removal_maximal_independent_set
-    ),
+    "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
     "uniform_weights_dynamic": functools.partial(
-        time_dynamic, dynamic_removal_maximal_independent_set_uniform_weights
+        time_partial_dynamic, dynamic_removal_maximal_independent_set_uniform_weights
     ),
 }
 

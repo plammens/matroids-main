@@ -1,4 +1,5 @@
 """Empirical analysis of the naive dynamic algorithm on real graph datasets."""
+
 from typing import Callable, Generator, List, Mapping, Tuple
 
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import numpy as np
 import perfplot
 
 from matroids.algorithms.dynamic import (
-    dynamic_removal_maximal_independent_set,
+    NaiveDynamic,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
 from matroids.algorithms.static import maximal_independent_set
@@ -28,7 +29,7 @@ SetupData = Tuple[
     List[EdgeType],
     MutableMatroid,
     MutableMatroid,
-    Generator,
+    NaiveDynamic,
     MutableMatroid,
     Generator,
 ]
@@ -51,8 +52,8 @@ def make_setup(
         matroid_copy3 = GraphicalMatroid(make_network_copy(network, weights))
 
         # start generator for naive dynamic algorithm so as to only test removal step
-        remover_generator2 = dynamic_removal_maximal_independent_set(matroid_copy2)
-        maximal_set = remover_generator2.send(None)  # compute current MIS
+        naive = NaiveDynamic(matroid_copy2)
+        maximal_set = naive.current
 
         # start generator for uniform weights dynamic algorithm
         remover_generator3 = dynamic_removal_maximal_independent_set_uniform_weights(
@@ -71,7 +72,7 @@ def make_setup(
             elements_to_remove,
             matroid_copy1,
             matroid_copy2,
-            remover_generator2,
+            naive,
             matroid_copy3,
             remover_generator3,
         )
@@ -92,8 +93,8 @@ def restart_greedy(setup_data: SetupData):
 
 
 def naive_dynamic(setup_data: SetupData):
-    elements_to_remove, _, _, remover_generator, *_ = setup_data
-    return [remover_generator.send(element) for element in elements_to_remove]
+    elements_to_remove, _, _, naive, *_ = setup_data
+    return [naive.remove_element(element) for element in elements_to_remove]
 
 
 def uniform_weights_dynamic(setup_data: SetupData):
@@ -105,12 +106,12 @@ plots = {
     "50 deletions in sequence on the FB dataset, random weights": (
         sorted(networks.keys())[:7],
         make_setup(uniform_weights=False, number_of_deletions=50),
-        [restart_greedy,  naive_dynamic],
+        [restart_greedy, naive_dynamic],
     ),
     "50 deletions in sequence on the FB dataset, uniform weights": (
         sorted(networks.keys())[:7],
         make_setup(uniform_weights=True, number_of_deletions=50),
-        [restart_greedy,  naive_dynamic, uniform_weights_dynamic],
+        [restart_greedy, naive_dynamic, uniform_weights_dynamic],
     ),
 }
 
