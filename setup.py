@@ -41,9 +41,9 @@ setup(
             ],
             "scripts": [
                 "matplotlib~=3.4.3",
-                "tqdm",
-                "perfplot",
-                "matplotx[all]",
+                "tqdm~=4.63.0",
+                "perfplot==0.9.15",
+                "matplotx[all]==0.3.6",
             ],
         }
     )
