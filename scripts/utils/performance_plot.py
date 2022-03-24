@@ -9,6 +9,8 @@ import matplotx.styles
 import numpy as np
 import tqdm
 
+from utils.save import save_figure
+
 
 MATPLOTLIB_STYLE = matplotx.styles.dufte | {
     "font.size": 10,
@@ -146,8 +148,9 @@ class PerformanceExperimentGroup:
     def show_performance(
         self, all_measurements: tp.Sequence[PerformanceMeasurements]
     ) -> None:
-        self.plot_performance(all_measurements)
+        fig = self.plot_performance(all_measurements)
         plt.show()
+        save_figure(fig, identifiers=[self.title])
 
     def measure_and_show(self) -> None:
         """Shortcut for running the experiments and showing the plot in one step."""
