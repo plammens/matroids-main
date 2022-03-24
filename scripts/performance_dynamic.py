@@ -95,9 +95,14 @@ timers = {
     ),
 }
 
+# versions that divide total time by number of removals
+timers_per_removal = {
+    label: lambda _timer=timer, **kwargs: _timer(**kwargs) / kwargs["size"]
+    for label, timer in timers.items()
+}
 
 
-rank_experiments = [
+experiments = [
     PerformanceExperiment(
         title="Total time over exhausting sequence of removals\n"
         f"uniform weights, fixed size ({size}), varying rank",
@@ -106,31 +111,20 @@ rank_experiments = [
         x_range=np.linspace(0, size, num=10, dtype=int),
         fixed_variables={"size": size},
     )
-    for size in [200]
-]
-
-size_experiments = [
+    for size in [150]
+] + [
     PerformanceExperiment(
         title="Time per deletion over exhausting sequence of removals\n"
         f"uniform weights, varying size, fixed rank ({rank})",
-        timer_functions=timers,
+        timer_functions=timers_per_removal,
         x_name="size",
-        x_range=np.linspace(100, 1000, num=10, dtype=int),
+        x_range=np.linspace(100, 500, num=10, dtype=int),
         fixed_variables={"rank": rank},
     )
-    for rank in [10, 20, 30]
+    for rank in [5, 10, 15]
 ]
 
+
 plt.style.use(matplotx.styles.dufte)
-
-for experiment in rank_experiments:
+for experiment in experiments:
     experiment.measure_and_show()
-
-for experiment in size_experiments:
-    measurements = experiment.measure_performance()
-    for label, times in measurements.items():
-        times /= experiment.x_range[:, np.newaxis]
-
-    fig, ax = plt.subplots()
-    experiment.plot_performance(ax, measurements)
-    plt.show()
