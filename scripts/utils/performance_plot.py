@@ -2,8 +2,17 @@ import dataclasses
 import typing as tp
 
 import matplotlib.pyplot as plt
+import matplotlib.style
+import matplotx.styles
 import numpy as np
 import tqdm
+
+
+MATPLOTLIB_STYLE = matplotx.styles.dufte | {
+    "font.size": 10,
+    "axes.titlesize": 12,
+}
+matplotlib.style.use(MATPLOTLIB_STYLE)
 
 
 PerformanceMeasurements = tp.Dict[str, np.ndarray]
@@ -76,7 +85,8 @@ class PerformanceExperiment:
             plt.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
 
         ax.set_ylim(bottom=0)
-        ax.legend()
+        ax.ticklabel_format(axis="y", scilimits=(-2, 2))
+        ax.figure.legend()
 
     def measure_and_plot(self, ax: plt.Axes) -> None:
         """

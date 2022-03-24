@@ -123,6 +123,5 @@ experiments = [
 ]
 
 
-plt.style.use(matplotx.styles.dufte)
 for experiment in experiments:
     experiment.measure_and_show()
