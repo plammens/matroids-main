@@ -2,8 +2,6 @@ import functools
 import random
 import typing as tp
 
-import matplotlib.pyplot as plt
-import matplotx
 import numpy as np
 
 from matroids.algorithms.dynamic import (
@@ -18,7 +16,7 @@ from matroids.matroid import (
     MutableIntUniformMatroid,
     MutableMatroid,
 )
-from scripts.utils.performance_plot import PerformanceExperiment
+from utils.performance_plot import PerformanceExperiment
 from utils.stopwatch import Stopwatch
 
 
