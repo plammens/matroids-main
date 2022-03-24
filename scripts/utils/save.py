@@ -17,12 +17,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def ensure_output_dir(path: os.PathLike = ROOT_OUTPUT_PATH):
-    path = os.path.normpath(path)  # avoid empty path at the end (foo/bar/)
-    if not os.path.exists(path):
-        ensure_output_dir(os.path.dirname(path))
+def ensure_output_dir_exists(path: os.PathLike = ROOT_OUTPUT_PATH) -> pathlib.Path:
+    """Create any missing directories in the given path."""
+    path = pathlib.Path(path)
+    if not path.exists():
+        ensure_output_dir_exists(path.parent)
         os.mkdir(path)
-    elif not os.path.isdir(path):
+    elif not path.is_dir():
         raise IOError("Output path {} already exists and is a file".format(path))
     return path
 
@@ -41,9 +42,7 @@ def save_output(
     components = list(identifiers)
     if include_output_name:
         components.insert(0, output_name)
-    name = "-".join(
-        "".join(filter(VALID_CHARS.__contains__, x)) for x in components if x
-    )
+    name = "-".join(components)
     file_extension = file_extension.lstrip(".")
     filename = "{}.{}".format(name, file_extension)
     path = output_dir / filename
@@ -56,7 +55,7 @@ def save_output(
         ]
     )
     logger.info(message)
-    ensure_output_dir(output_dir)
+    ensure_output_dir_exists(output_dir)
     save_func(str(path))
 
 
@@ -65,7 +64,7 @@ def save_figure(
     identifiers: tp.Sequence[str],
     output_dir: os.PathLike = ROOT_OUTPUT_PATH / "figures",
     extra_artists: tp.Collection[plt.Artist] = None,
-):
+) -> None:
     save_output(
         functools.partial(
             fig.savefig, bbox_extra_artists=extra_artists, bbox_inches="tight"
