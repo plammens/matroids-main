@@ -16,7 +16,7 @@ from matroids.matroid import (
     MutableIntUniformMatroid,
     MutableMatroid,
 )
-from utils.performance_plot import PerformanceExperiment
+from utils.performance_plot import PerformanceExperiment, PerformanceExperimentGroup
 from utils.stopwatch import Stopwatch
 
 
@@ -100,28 +100,36 @@ timers_per_removal = {
 }
 
 
-experiments = [
-    PerformanceExperiment(
-        title="Total time over exhausting sequence of removals\n"
-        f"uniform weights, fixed size ({size}), varying rank",
-        timer_functions=timers,
-        x_name="rank",
-        x_range=np.linspace(0, size, num=10, dtype=int),
-        fixed_variables={"size": size},
-    )
-    for size in [150]
-] + [
-    PerformanceExperiment(
-        title="Time per deletion over exhausting sequence of removals\n"
-        f"uniform weights, varying size, fixed rank ({rank})",
-        timer_functions=timers_per_removal,
-        x_name="size",
-        x_range=np.linspace(100, 500, num=10, dtype=int),
-        fixed_variables={"rank": rank},
-    )
-    for rank in [5, 10, 15]
-]
+size_experiments = PerformanceExperimentGroup(
+    title="Total time over exhausting sequence of removals\n"
+    "uniform weights, fixed size, varying rank",
+    experiments=[
+        PerformanceExperiment(
+            title=f"size = {size}",
+            timer_functions=timers,
+            x_name="rank",
+            x_range=np.linspace(0, size, num=10, dtype=int),
+            fixed_variables={"size": size},
+        )
+        for size in [150]
+    ],
+)
+
+rank_experiments = PerformanceExperimentGroup(
+    title="Time per deletion over exhausting sequence of removals\n"
+    f"uniform weights, varying size, fixed rank",
+    experiments=[
+        PerformanceExperiment(
+            title=f"rank = {rank}",
+            timer_functions=timers_per_removal,
+            x_name="size",
+            x_range=np.linspace(100, 500, num=10, dtype=int),
+            fixed_variables={"rank": rank},
+        )
+        for rank in [5, 10, 15]
+    ],
+)
 
 
-for experiment in experiments:
-    experiment.measure_and_show()
+size_experiments.measure_and_show()
+rank_experiments.measure_and_show()
