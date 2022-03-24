@@ -16,6 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/testvenv" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/.eggs" />
+      <excludeFolder url="file://$MODULE_DIR$/cache" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (l4-project-matroids-main)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

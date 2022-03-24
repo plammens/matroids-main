@@ -82,7 +82,7 @@ class PerformanceExperiment:
         for label, times in measurements.items():
             means = times.mean(axis=-1)
             stds = times.std(axis=-1)
-            plt.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
+            ax.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
 
         ax.set_ylim(bottom=0)
         ax.ticklabel_format(axis="y", scilimits=(-2, 2))
@@ -96,9 +96,13 @@ class PerformanceExperiment:
         """
         self.plot_performance(ax, self.measure_performance())
 
-    def measure_and_show(self) -> None:
-        """Shortcut for creating the figure and showing it afterwards."""
+    def show_performance(self, measurements: PerformanceMeasurements):
+        """Shortcut for creating the figure and plotting the measurements."""
         fig, ax = plt.subplots()
-        self.measure_and_plot(ax)
+        self.plot_performance(ax, measurements)
         fig.tight_layout()
         plt.show()
+
+    def measure_and_show(self) -> None:
+        """Shortcut for running the experiment and showing the plot in one step."""
+        self.show_performance(self.measure_performance())
