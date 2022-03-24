@@ -16,7 +16,10 @@ from matroids.matroid import (
     MutableIntUniformMatroid,
     MutableMatroid,
 )
-from utils.performance_plot import PerformanceExperiment, PerformanceExperimentGroup
+from utils.performance_experiment import (
+    PerformanceExperiment,
+    PerformanceExperimentGroup,
+)
 from utils.stopwatch import Stopwatch
 
 
@@ -131,5 +134,5 @@ rank_experiments = PerformanceExperimentGroup(
 )
 
 
-size_experiments.measure_and_show()
-rank_experiments.measure_and_show()
+size_experiments.measure_show_and_save()
+rank_experiments.measure_show_and_save()

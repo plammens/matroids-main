@@ -111,7 +111,10 @@ class PerformanceExperimentGroup:
         return tuple(e.measure_performance() for e in self.experiments)
 
     def plot_performance(
-        self, all_measurements: tp.Sequence[PerformanceMeasurements]
+        self,
+        all_measurements: tp.Sequence[PerformanceMeasurements],
+        title: bool = True,
+        manual_legend_placement=False,
     ) -> plt.Figure:
         """Creates a new figure and plots the measurements of each experiment."""
         fig, axes = plt.subplots(
@@ -122,7 +125,8 @@ class PerformanceExperimentGroup:
             figsize=[2 + 4 * len(self.experiments), 4.8],
         )
         fig: plt.Figure
-        fig.suptitle(self.title)
+        if title:
+            fig.suptitle(self.title)
 
         for experiment, measurement, ax in zip(
             self.experiments, all_measurements, axes.flat
@@ -135,12 +139,12 @@ class PerformanceExperimentGroup:
             for handles, labels in map(plt.Axes.get_legend_handles_labels, axes.flat)
         ]
         artist_dict = functools.reduce(operator.or_, artist_dicts)  # dict union
-        fig.legend(
-            artist_dict.values(),
-            artist_dict.keys(),
-            loc="upper left",
-            bbox_to_anchor=(1.0, 1.0),
+        kwargs = (
+            {"loc": "upper left", "bbox_to_anchor": (1.0, 1.0)}
+            if manual_legend_placement
+            else {"loc": "center right"}
         )
+        fig.legend(artist_dict.values(), artist_dict.keys(), **kwargs)
 
         fig.tight_layout()
         return fig
@@ -148,10 +152,19 @@ class PerformanceExperimentGroup:
     def show_performance(
         self, all_measurements: tp.Sequence[PerformanceMeasurements]
     ) -> None:
-        fig = self.plot_performance(all_measurements)
+        self.plot_performance(all_measurements)
         plt.show()
+
+    def save_performance_figure(
+        self, all_measurements: tp.Sequence[PerformanceMeasurements]
+    ):
+        fig = self.plot_performance(
+            all_measurements, title=False, manual_legend_placement=True
+        )
         save_figure(fig, identifiers=[self.title])
 
-    def measure_and_show(self) -> None:
+    def measure_show_and_save(self) -> None:
         """Shortcut for running the experiments and showing the plot in one step."""
-        self.show_performance(self.measure_performance())
+        measurements = self.measure_performance()
+        self.show_performance(measurements)
+        self.save_performance_figure(measurements)
