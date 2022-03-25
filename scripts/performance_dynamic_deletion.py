@@ -31,13 +31,19 @@ set_seed(2022)
 def input_generator(
     size: int, rank: int, uniform_weights: bool
 ) -> tp.Iterator[InputData]:
+    # in a uniform matroid all that changes from an element to another is the weight
+    # so can reuse the same matroid
+    matroid = generate_random_dummy_matroid(size, rank, uniform_weights=uniform_weights)
+
+    # simulate element selection uniformly at random without replacement
+    elements = list(matroid.ground_set)
     while True:
-        yield {
-            "matroid": generate_random_dummy_matroid(
-                size, rank, uniform_weights=uniform_weights
-            ),
-            "element_to_remove": random.randrange(size),
-        }
+        random.shuffle(elements)
+        for element in elements:
+            yield {
+                "matroid": matroid,
+                "element_to_remove": element,
+            }
 
 
 def time_restart_greedy(
@@ -150,7 +156,7 @@ uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
             x_range=np.linspace(0, size, num=10, dtype=int),
             fixed_variables={"size": size, "uniform_weights": True},
             input_generator=input_generator,
-            generated_inputs=50,
+            generated_inputs=100,
         )
         for size in [150]
     ],
@@ -167,14 +173,14 @@ uniform_deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
             x_range=np.linspace(100, 400, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": True},
             input_generator=input_generator,
-            generated_inputs=50,
+            generated_inputs=100,
         )
         for rank in [40, 80]
     ],
 )
 
 
-deletion_fixed_size_varying_rank.measure_show_and_save()
-deletion_fixed_rank_varying_size.measure_show_and_save()
-uniform_deletion_fixed_size_varying_rank.measure_show_and_save()
-uniform_deletion_fixed_rank_varying_size.measure_show_and_save()
+deletion_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
+deletion_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
+uniform_deletion_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
+uniform_deletion_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
