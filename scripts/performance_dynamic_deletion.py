@@ -16,6 +16,7 @@ from matroids.matroid import (
     MutableIntUniformMatroid,
 )
 from utils.generate import generate_dummy_matroid
+from utils.misc import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
@@ -24,7 +25,7 @@ from utils.performance_experiment import (
 from utils.stopwatch import Stopwatch
 
 
-random.seed(2022)
+set_seed(2022)
 
 
 def input_generator(

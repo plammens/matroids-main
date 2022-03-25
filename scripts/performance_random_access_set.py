@@ -10,9 +10,10 @@ import matplotlib.pyplot as plt
 import perfplot
 
 from matroids.utils.random_access_set import RandomAccessMutableSet
+from utils.misc import set_seed
 
 
-random.seed(2022)
+set_seed(2022)
 
 
 SetupData = Tuple[
