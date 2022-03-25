@@ -98,8 +98,8 @@ timers = {
 }
 
 
-size_experiments = PerformanceExperimentGroup(
-    identifier="deletion_fixed_size_varying_rank",
+uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
+    identifier="uniform_deletion_fixed_size_varying_rank",
     title="Time per deletion (uniform weights, fixed size, varying rank)",
     experiments=[
         PerformanceExperiment(
@@ -115,8 +115,8 @@ size_experiments = PerformanceExperimentGroup(
     ],
 )
 
-rank_experiments = PerformanceExperimentGroup(
-    identifier="deletion_fixed_rank_varying_size",
+uniform_deletion_fixed_size_varying_size = PerformanceExperimentGroup(
+    identifier="uniform_deletion_fixed_rank_varying_size",
     title="Time per deletion (uniform weights, varying size, fixed rank)",
     experiments=[
         PerformanceExperiment(
@@ -133,5 +133,5 @@ rank_experiments = PerformanceExperimentGroup(
 )
 
 
-size_experiments.measure_show_and_save()
-rank_experiments.measure_show_and_save()
+uniform_deletion_fixed_size_varying_rank.measure_show_and_save()
+uniform_deletion_fixed_size_varying_size.measure_show_and_save()
