@@ -1,6 +1,7 @@
 import dataclasses
 import functools
 import random
+import typing as tp
 
 import numpy as np
 
@@ -33,14 +34,16 @@ def generate_dummy_matroid(
     return MutableIntUniformMatroid(size, rank, weights)
 
 
-def input_generator(size: int, rank: int, uniform_weights: bool) -> InputData:
+def input_generator(
+    size: int, rank: int, uniform_weights: bool
+) -> tp.Iterator[InputData]:
     matroid = generate_dummy_matroid(size, rank, uniform_weights)
 
-    # select the sequence of removals (over all elements of the matroid)
     elements = list(matroid.ground_set)
-    element_to_remove = random.choice(elements)
+    random.shuffle(elements)
 
-    return {"matroid": matroid, "element_to_remove": element_to_remove}
+    for element in elements:
+        yield {"matroid": matroid, "element_to_remove": element}
 
 
 def time_restart_greedy(
@@ -113,7 +116,7 @@ size_experiments = PerformanceExperimentGroup(
             x_range=np.linspace(0, size, num=10, dtype=int),
             fixed_variables={"size": size, "uniform_weights": True},
             input_generator=input_generator,
-            generated_inputs=100,
+            generated_inputs=50,
         )
         for size in [150]
     ],
@@ -130,7 +133,7 @@ rank_experiments = PerformanceExperimentGroup(
             x_range=np.linspace(100, 500, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": True},
             input_generator=input_generator,
-            generated_inputs=100,
+            generated_inputs=50,
         )
         for rank in [25, 50, 100]
     ],
