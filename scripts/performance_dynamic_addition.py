@@ -1,5 +1,4 @@
 import copy
-import dataclasses
 import functools
 import random
 import typing as tp
@@ -11,17 +10,16 @@ from matroids.algorithms.dynamic import (
     NaiveDynamic,
     RestartGreedy,
 )
-from matroids.algorithms.static import maximal_independent_set
 from utils.generate import (
     generate_random_graphical_matroid,
 )
 from utils.misc import compute_missing_edges
-from utils.seed import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
     PerformanceExperimentGroup,
 )
+from utils.seed import set_seed
 from utils.stopwatch import Stopwatch
 
 
@@ -100,5 +98,5 @@ addition_fixed_rank_varying_size = PerformanceExperimentGroup(
 )
 
 
-addition_fixed_size_varying_rank.measure_show_and_save()
-addition_fixed_rank_varying_size.measure_show_and_save()
+addition_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
+addition_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")

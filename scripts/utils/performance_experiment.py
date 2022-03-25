@@ -10,6 +10,7 @@ import matplotx.styles
 import numpy as np
 import tqdm
 
+from utils.plotting import plot_mean_and_range
 from utils.save import save_figure
 
 
@@ -18,6 +19,8 @@ MATPLOTLIB_STYLE = matplotx.styles.dufte | {
     "axes.titlesize": 12,
 }
 matplotlib.style.use(MATPLOTLIB_STYLE)
+
+PLOT_KINDS = ("mean&std", "mean&range")
 
 
 InputData = tp.Dict[str, tp.Any]  # keyword arguments
@@ -71,7 +74,7 @@ class PerformanceExperiment:
         ..., tp.Iterable[InputData]
     ] = lambda **variables: itt.repeat(variables)
     generated_inputs: int = 1
-    repeats: int = 5
+    repeats: int = 3
 
     title: tp.Optional[str] = None
 
@@ -109,6 +112,7 @@ class PerformanceExperiment:
         self,
         ax: plt.Axes,
         measurements: PerformanceMeasurements,
+        plot_kind: tp.Literal["mean&std", "mean&range"] = "mean&std",
     ) -> None:
         """
         Plot performance measurements obtained from :meth:`measure_performance`.
@@ -124,10 +128,16 @@ class PerformanceExperiment:
         What is plotted is (for each procedure) these means +- std as errorbars (y axis)
         vs the x value (x axis).
 
+        :param plot_kind: Plot plot_kind: mean +- std as error bars or mean with range as
+        filled
+            between solid color.
         :param ax: Axes object on which to plot.
         :param measurements: Measurements to plot, obtained from
             :meth:`measure_performance`.
         """
+        if plot_kind not in PLOT_KINDS:
+            raise ValueError(f"``plot_kind`` should be one of {PLOT_KINDS}")
+
         if self.title is not None:
             ax.set_title(self.title)
         ax.set_xlabel(self.x_name)
@@ -138,8 +148,20 @@ class PerformanceExperiment:
             min_times_among_repetitions = np.min(times, axis=-1)
             means = min_times_among_repetitions.mean(axis=-1)
             all_means.append(means)
-            stds = min_times_among_repetitions.std(axis=-1)
-            ax.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
+
+            if plot_kind == "mean&std":
+                stds = min_times_among_repetitions.std(axis=-1)
+                ax.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
+            elif plot_kind == "mean&range":
+                plot_mean_and_range(
+                    ax,
+                    self.x_range,
+                    y=min_times_among_repetitions,
+                    marker=".",
+                    label=label,
+                )
+            else:
+                assert False
 
         ax.set_ylim(bottom=0, top=1.05 * max(np.max(a) for a in all_means))
         ax.ticklabel_format(axis="y", scilimits=(-2, 2))
@@ -160,6 +182,10 @@ class PerformanceExperimentGroup:
 
     experiments: tp.Sequence[PerformanceExperiment]
 
+    import cachetools
+    from cachetools_ext.fs import FSLRUCache
+
+    @cachetools.cached(cache=FSLRUCache(maxsize=100), key=lambda x: x.identifier)
     def measure_performance(self) -> tp.Tuple[PerformanceMeasurements, ...]:
         """Run each of the experiments in the group."""
         return tuple(e.measure_performance() for e in self.experiments)
@@ -167,6 +193,7 @@ class PerformanceExperimentGroup:
     def plot_performance(
         self,
         all_measurements: tp.Sequence[PerformanceMeasurements],
+        plot_kind: tp.Literal["mean&std", "mean&range"] = "mean&std",
         title: bool = True,
         manual_legend_placement=False,
     ) -> plt.Figure:
@@ -185,7 +212,7 @@ class PerformanceExperimentGroup:
         for experiment, measurement, ax in zip(
             self.experiments, all_measurements, axes.flat
         ):
-            experiment.plot_performance(ax, measurement)
+            experiment.plot_performance(ax, measurement, plot_kind=plot_kind)
 
         # legend - avoid duplicate labels
         artist_dicts = [
@@ -204,21 +231,21 @@ class PerformanceExperimentGroup:
         return fig
 
     def show_performance(
-        self, all_measurements: tp.Sequence[PerformanceMeasurements]
+        self, all_measurements: tp.Sequence[PerformanceMeasurements], **kwargs
     ) -> None:
-        self.plot_performance(all_measurements)
+        self.plot_performance(all_measurements, **kwargs)
         plt.show()
 
     def save_performance_figure(
-        self, all_measurements: tp.Sequence[PerformanceMeasurements]
+        self, all_measurements: tp.Sequence[PerformanceMeasurements], **kwargs
     ):
         fig = self.plot_performance(
-            all_measurements, title=False, manual_legend_placement=True
+            all_measurements, title=False, manual_legend_placement=True, **kwargs
         )
         save_figure(fig, identifiers=[self.identifier])
 
-    def measure_show_and_save(self) -> None:
+    def measure_show_and_save(self, **kwargs) -> None:
         """Shortcut for running the experiments and showing the plot in one step."""
         measurements = self.measure_performance()
-        self.show_performance(measurements)
-        self.save_performance_figure(measurements)
+        self.show_performance(measurements, **kwargs)
+        self.save_performance_figure(measurements, **kwargs)
