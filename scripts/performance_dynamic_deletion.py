@@ -15,8 +15,8 @@ from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import (
     MutableIntUniformMatroid,
 )
-from utils.generate import generate_dummy_matroid
-from utils.misc import set_seed
+from utils.generate import generate_random_dummy_matroid
+from utils.seed import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
@@ -33,7 +33,7 @@ def input_generator(
 ) -> tp.Iterator[InputData]:
     while True:
         yield {
-            "matroid": generate_dummy_matroid(
+            "matroid": generate_random_dummy_matroid(
                 size, rank, uniform_weights=uniform_weights
             ),
             "element_to_remove": random.randrange(size),

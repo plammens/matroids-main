@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import perfplot
 
 from matroids.utils.random_access_set import RandomAccessMutableSet
-from utils.misc import set_seed
+from utils.seed import set_seed
 
 
 set_seed(2022)

@@ -15,8 +15,8 @@ from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import (
     MutableIntUniformMatroid,
 )
-from utils.generate import generate_dummy_matroid
-from utils.misc import set_seed
+from utils.generate import generate_random_dummy_matroid
+from utils.seed import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
@@ -29,7 +29,7 @@ set_seed(2022)
 
 
 def input_generator(size: int, rank: int) -> tp.Iterator[InputData]:
-    matroid = generate_dummy_matroid(size, rank, uniform_weights=True)
+    matroid = generate_random_dummy_matroid(size, rank, uniform_weights=True)
 
     elements = list(matroid.ground_set)
     while True:
