@@ -27,10 +27,8 @@ from utils.stopwatch import Stopwatch
 random.seed(2022)
 
 
-def input_generator(
-    size: int, rank: int, uniform_weights: bool
-) -> tp.Iterator[InputData]:
-    matroid = generate_dummy_matroid(size, rank, uniform_weights)
+def input_generator(size: int, rank: int) -> tp.Iterator[InputData]:
+    matroid = generate_dummy_matroid(size, rank, uniform_weights=True)
 
     elements = list(matroid.ground_set)
     while True:
@@ -116,7 +114,7 @@ size_experiments = PerformanceExperimentGroup(
             timer_functions=timers,
             x_name="rank",
             x_range=np.linspace(0, size, num=10, dtype=int),
-            fixed_variables={"size": size, "uniform_weights": True},
+            fixed_variables={"size": size},
             input_generator=input_generator,
             generated_inputs=3,
         )
@@ -134,7 +132,7 @@ rank_experiments = PerformanceExperimentGroup(
             timer_functions=timers_per_removal,
             x_name="size",
             x_range=np.linspace(100, 500, num=10, dtype=int),
-            fixed_variables={"rank": rank, "uniform_weights": True},
+            fixed_variables={"rank": rank},
             input_generator=input_generator,
             generated_inputs=3,
         )

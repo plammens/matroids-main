@@ -30,13 +30,13 @@ random.seed(2022)
 def input_generator(
     size: int, rank: int, uniform_weights: bool
 ) -> tp.Iterator[InputData]:
-    matroid = generate_dummy_matroid(size, rank, uniform_weights)
-
-    elements = list(matroid.ground_set)
-    random.shuffle(elements)
-
-    for element in elements:
-        yield {"matroid": matroid, "element_to_remove": element}
+    while True:
+        yield {
+            "matroid": generate_dummy_matroid(
+                size, rank, uniform_weights=uniform_weights
+            ),
+            "element_to_remove": random.randrange(size),
+        }
 
 
 def time_restart_greedy(
@@ -89,13 +89,53 @@ def time_full_dynamic(
     return stopwatch.measurement
 
 
-timers = {
+non_uniform_timers = {
     "restart_greedy": time_restart_greedy,
     "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
+}
+
+
+uniform_timers = non_uniform_timers | {
     "uniform_weights_dynamic": functools.partial(
         time_partial_dynamic, dynamic_removal_maximal_independent_set_uniform_weights
     ),
 }
+
+
+deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
+    identifier="deletion_fixed_size_varying_rank",
+    title="Time per deletion (fixed size, varying rank)",
+    experiments=[
+        PerformanceExperiment(
+            title=f"size = {size}",
+            timer_functions=non_uniform_timers,
+            x_name="rank",
+            x_range=np.linspace(0, size, num=10, dtype=int),
+            fixed_variables={"size": size, "uniform_weights": False},
+            input_generator=input_generator,
+            generated_inputs=50,
+        )
+        for size in [1000]
+    ],
+)
+
+
+deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
+    identifier="deletion_fixed_rank_varying_size",
+    title="Time per deletion (varying size, fixed rank)",
+    experiments=[
+        PerformanceExperiment(
+            title=f"rank = {rank}",
+            timer_functions=non_uniform_timers,
+            x_name="size",
+            x_range=np.linspace(100, 500, num=10, dtype=int),
+            fixed_variables={"rank": rank, "uniform_weights": False},
+            input_generator=input_generator,
+            generated_inputs=50,
+        )
+        for rank in [100]
+    ],
+)
 
 
 uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
@@ -104,7 +144,7 @@ uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
     experiments=[
         PerformanceExperiment(
             title=f"size = {size}",
-            timer_functions=timers,
+            timer_functions=uniform_timers,
             x_name="rank",
             x_range=np.linspace(0, size, num=10, dtype=int),
             fixed_variables={"size": size, "uniform_weights": True},
@@ -115,13 +155,13 @@ uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
     ],
 )
 
-uniform_deletion_fixed_size_varying_size = PerformanceExperimentGroup(
+uniform_deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
     identifier="uniform_deletion_fixed_rank_varying_size",
     title="Time per deletion (uniform weights, varying size, fixed rank)",
     experiments=[
         PerformanceExperiment(
             title=f"rank = {rank}",
-            timer_functions=timers,
+            timer_functions=uniform_timers,
             x_name="size",
             x_range=np.linspace(100, 400, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": True},
@@ -133,5 +173,7 @@ uniform_deletion_fixed_size_varying_size = PerformanceExperimentGroup(
 )
 
 
+deletion_fixed_size_varying_rank.measure_show_and_save()
+deletion_fixed_rank_varying_size.measure_show_and_save()
 uniform_deletion_fixed_size_varying_rank.measure_show_and_save()
-uniform_deletion_fixed_size_varying_size.measure_show_and_save()
+uniform_deletion_fixed_rank_varying_size.measure_show_and_save()
