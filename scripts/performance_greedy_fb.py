@@ -1,36 +1,45 @@
 """Empirical analysis of the greedy algorithm on real graph datasets."""
-
-import matplotlib.pyplot as plt
-import numpy as np
-import perfplot
+import itertools as itt
+import typing as tp
 
 from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import GraphicalMatroid
+from utils.performance_experiment import (
+    InputData,
+    PerformanceExperiment,
+    PerformanceExperimentGroup,
+)
 from utils.slndc import load_facebook_dataset
+from utils.stopwatch import make_timer
 
-
-rng = np.random.default_rng(seed=2021)
 
 # download a graph dataset from the Stanford Large Network Dataset Collection
 # index by number of edges (size of ground set)
-networks = {len(g.edges): g for g in load_facebook_dataset()}
-
-plots = {
-    "Performance on the Facebook dataset": (
-        sorted(networks.keys())[:7],
-        lambda n: GraphicalMatroid(networks[n]),
-    ),
+fb_dataset = load_facebook_dataset()
+networks = {
+    num_edges: list(graphs)
+    for num_edges, graphs in itt.groupby(fb_dataset, key=lambda g: len(g.edges))
 }
 
-for title, (n_range, factory) in plots.items():
-    results = perfplot.bench(
-        n_range=list(n_range),
-        setup=factory,
-        kernels=[maximal_independent_set],
-        labels=["greedy"],
-        xlabel="number of edges",
-    )
-    results.plot()
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
+
+def input_generator(size: int) -> tp.Iterator[InputData]:
+    for graph in itt.cycle(networks[size]):
+        yield {"matroid": GraphicalMatroid(graph)}
+
+
+timers = {"greedy": make_timer(maximal_independent_set)}
+
+
+PerformanceExperimentGroup(
+    identifier="greedy_fb",
+    title="Performance on the Facebook dataset",
+    experiments=[
+        PerformanceExperiment(
+            timer_functions=timers,
+            x_name="size",
+            x_range=sorted(networks.keys()),
+            input_generator=input_generator,
+            generated_inputs=5,
+        )
+    ],
+).measure_show_and_save()
