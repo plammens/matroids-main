@@ -14,8 +14,8 @@ from matroids.algorithms.dynamic import (
 from matroids.algorithms.static import maximal_independent_set
 from matroids.matroid import (
     MutableIntUniformMatroid,
-    MutableMatroid,
 )
+from utils.generate import generate_dummy_matroid
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
@@ -25,13 +25,6 @@ from utils.stopwatch import Stopwatch
 
 
 random.seed(2022)
-
-
-def generate_dummy_matroid(
-    size: int, rank: int, uniform_weights: bool
-) -> MutableMatroid:
-    weights = {} if uniform_weights else {i: random.random() for i in range(size)}
-    return MutableIntUniformMatroid(size, rank, weights)
 
 
 def input_generator(
@@ -106,7 +99,7 @@ timers = {
 
 
 size_experiments = PerformanceExperimentGroup(
-    identifier="fixed_size_varying_rank",
+    identifier="deletion_fixed_size_varying_rank",
     title="Time per deletion (uniform weights, fixed size, varying rank)",
     experiments=[
         PerformanceExperiment(
@@ -123,19 +116,19 @@ size_experiments = PerformanceExperimentGroup(
 )
 
 rank_experiments = PerformanceExperimentGroup(
-    identifier="fixed_rank_varying_size",
+    identifier="deletion_fixed_rank_varying_size",
     title="Time per deletion (uniform weights, varying size, fixed rank)",
     experiments=[
         PerformanceExperiment(
             title=f"rank = {rank}",
             timer_functions=timers,
             x_name="size",
-            x_range=np.linspace(100, 500, num=10, dtype=int),
+            x_range=np.linspace(100, 400, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": True},
             input_generator=input_generator,
             generated_inputs=50,
         )
-        for rank in [25, 50, 100]
+        for rank in [40, 80]
     ],
 )
 
