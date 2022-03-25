@@ -1,57 +1,103 @@
 """Script to generate some performance graphs for the greedy algorithm."""
+import functools
+import itertools as itt
+import more_itertools as mitt
 
-import matplotlib.pyplot as plt
 import numpy as np
-import perfplot
 
 from matroids.algorithms.static import maximal_independent_set
-from matroids.matroid import RealLinearMatroid
 from matroids.matroid.uniform import IntUniformMatroid
+from utils.generate import (
+    generate_2_by_n_matrix_matroid,
+    generate_n_by_n_matrix_matroid,
+    generate_random_dummy_matroid,
+)
+from utils.performance_experiment import (
+    PerformanceExperiment,
+    PerformanceExperimentGroup,
+)
+from utils.stopwatch import make_timer
 
 
-rng = np.random.default_rng(seed=2021)
+timers = {"greedy": make_timer(maximal_independent_set)}
 
 
-def generate_2_by_n_matroid(size: int) -> RealLinearMatroid:
-    matrix = rng.random((2, size))
-    weights = rng.random((size,))
-    return RealLinearMatroid(matrix, weights)
+PerformanceExperimentGroup(
+    identifier="greedy_uniform_matroid",
+    title="Performance on uniform matroid",
+    experiments=[
+        PerformanceExperiment(
+            title=f"rank = {rank}",
+            timer_functions=timers,
+            x_name="size",
+            x_range=np.linspace(0, 10_000, num=10, dtype=int),
+            input_generator=lambda size: (
+                {"matroid": m}
+                for m in mitt.repeatfunc(
+                    functools.partial(
+                        generate_random_dummy_matroid, size, rank, uniform_weights=False
+                    )
+                )
+            ),
+            generated_inputs=5,
+        )
+        for rank in [50, 1000]
+    ],
+).measure_show_and_save()
 
 
-def generate_n_by_n_matroid(size: int) -> RealLinearMatroid:
-    matrix = rng.random((size, size))
-    weights = rng.random((size,))
-    return RealLinearMatroid(matrix, weights)
+PerformanceExperimentGroup(
+    identifier="greedy_free_matroid",
+    title="Performance on free matroid",
+    experiments=[
+        PerformanceExperiment(
+            timer_functions=timers,
+            x_name="size",
+            x_range=np.linspace(0, 100, num=10, dtype=int),
+            input_generator=lambda size: itt.repeat(
+                {"matroid": IntUniformMatroid.free(size)}
+            ),
+            generated_inputs=1,
+        )
+    ],
+).measure_show_and_save()
 
 
-plots = {
-    "Performance on $U_{10,n}$": (
-        range(0, 100, 10),
-        lambda n: IntUniformMatroid(size=n, rank=10),
-    ),
-    "Performance on free matroid of size n": (
-        range(0, 100, 10),
-        lambda n: IntUniformMatroid.free(n),
-    ),
-    "Performance on 2 x n uniform random matrices": (
-        range(0, 1000, 100),
-        generate_2_by_n_matroid,
-    ),
-    "Performance on n x n uniform random matrices": (
-        range(0, 100, 10),
-        generate_n_by_n_matroid,
-    ),
-}
+PerformanceExperimentGroup(
+    identifier="greedy_2_by_n",
+    title="Performance on 2 x n random matrices",
+    experiments=[
+        PerformanceExperiment(
+            timer_functions=timers,
+            x_name="n",
+            x_range=np.linspace(0, 1000, num=10, dtype=int),
+            input_generator=lambda size: (
+                {"matroid": m}
+                for m in mitt.repeatfunc(
+                    functools.partial(generate_2_by_n_matrix_matroid, size)
+                )
+            ),
+            generated_inputs=10,
+        )
+    ],
+).measure_show_and_save()
 
-for title, (n_range, factory) in plots.items():
-    results = perfplot.bench(
-        n_range=list(n_range),
-        setup=factory,
-        kernels=[maximal_independent_set],
-        labels=["greedy"],
-        xlabel="n = |E|",
-    )
-    results.plot()
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
+
+PerformanceExperimentGroup(
+    identifier="greedy_n_by_n",
+    title="Performance on n x n random matrices",
+    experiments=[
+        PerformanceExperiment(
+            timer_functions=timers,
+            x_name="n",
+            x_range=np.linspace(0, 150, num=15, dtype=int),
+            input_generator=lambda size: (
+                {"matroid": m}
+                for m in mitt.repeatfunc(
+                    functools.partial(generate_n_by_n_matrix_matroid, size)
+                )
+            ),
+            generated_inputs=10,
+        )
+    ],
+).measure_show_and_save()

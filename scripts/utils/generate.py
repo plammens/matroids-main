@@ -1,10 +1,12 @@
 import random
 
 import networkx as nx
+import numpy as np
 
 from matroids.matroid import (
     GraphicalMatroid,
     MutableIntUniformMatroid,
+    RealLinearMatroid,
     set_weights,
 )
 from utils.misc import compute_missing_edges
@@ -39,3 +41,15 @@ def generate_random_graphical_matroid(
         set_weights(graph, weights)
 
     return GraphicalMatroid(graph)
+
+
+def generate_2_by_n_matrix_matroid(size: int) -> RealLinearMatroid:
+    matrix = np.random.random((2, size))
+    weights = np.random.random((size,))
+    return RealLinearMatroid(matrix, weights)
+
+
+def generate_n_by_n_matrix_matroid(size: int) -> RealLinearMatroid:
+    matrix = np.random.random((size, size))
+    weights = np.random.random((size,))
+    return RealLinearMatroid(matrix, weights)

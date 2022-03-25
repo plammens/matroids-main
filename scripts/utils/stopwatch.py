@@ -30,3 +30,21 @@ class Stopwatch(tp.ContextManager["Stopwatch"]):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.end_time = time.perf_counter()
+
+
+def make_timer(func: tp.Callable) -> tp.Callable[..., float]:
+    """
+    Utility to wrap a callable into a timer function which measures its execution time.
+
+    :param func: Callable to be timed.
+    :return: A timer function which forwards arguments to the callable and returns
+        execution time in seconds.
+    """
+
+    def timer(*args, **kwargs) -> float:
+        with Stopwatch() as stopwatch:
+            func(*args, **kwargs)
+
+        return stopwatch.measurement
+
+    return timer
