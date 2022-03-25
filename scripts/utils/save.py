@@ -8,24 +8,14 @@ from typing import Callable, Sequence
 
 import matplotlib.pyplot as plt
 
+from utils.misc import ROOT_OUTPUT_PATH, ensure_output_dir_exists
 
-ROOT_OUTPUT_PATH = pathlib.Path(__file__).parent.parent.parent.resolve() / "artifacts"
+
 VALID_CHARS = string.ascii_letters + string.digits + " "
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def ensure_output_dir_exists(path: os.PathLike = ROOT_OUTPUT_PATH) -> pathlib.Path:
-    """Create any missing directories in the given path."""
-    path = pathlib.Path(path)
-    if not path.exists():
-        ensure_output_dir_exists(path.parent)
-        os.mkdir(path)
-    elif not path.is_dir():
-        raise IOError("Output path {} already exists and is a file".format(path))
-    return path
 
 
 def save_output(
@@ -62,7 +52,7 @@ def save_output(
 def save_figure(
     fig: plt.Figure,
     identifiers: tp.Sequence[str],
-    output_dir: os.PathLike = ROOT_OUTPUT_PATH / "figures",
+    output_dir: os.PathLike = ROOT_OUTPUT_PATH/"figures",
     extra_artists: tp.Collection[plt.Artist] = None,
 ) -> None:
     save_output(

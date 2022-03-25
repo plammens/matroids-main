@@ -5,6 +5,8 @@ from typing import Union
 
 import tqdm
 
+from utils.misc import ensure_output_dir_exists
+
 
 class DownloadTqdm(tqdm.tqdm):
     def __init__(self, url: str):
@@ -67,6 +69,7 @@ def ensure_downloaded(url: str, path=None) -> pathlib.Path:
         if path is not None
         else pathlib.Path.cwd().joinpath(extract_filename(url))
     )
+    ensure_output_dir_exists(path.parent)
     if path.is_file():
         return path
     else:
