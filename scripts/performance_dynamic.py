@@ -115,7 +115,7 @@ size_experiments = PerformanceExperimentGroup(
             input_generator=input_generator,
             generated_inputs=100,
         )
-        for size in [150]
+        for size in [100]
     ],
 )
 
@@ -127,12 +127,12 @@ rank_experiments = PerformanceExperimentGroup(
             title=f"rank = {rank}",
             timer_functions=timers,
             x_name="size",
-            x_range=np.linspace(100, 500, num=10, dtype=int),
+            x_range=np.linspace(50, 200, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": True},
             input_generator=input_generator,
             generated_inputs=100,
         )
-        for rank in [25, 50, 100]
+        for rank in [10, 20, 50]
     ],
 )
 

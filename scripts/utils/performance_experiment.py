@@ -9,6 +9,7 @@ import matplotx.styles
 import numpy as np
 import tqdm
 
+from utils.plotting import plot_mean_and_range
 from utils.save import save_figure
 
 
@@ -131,9 +132,9 @@ class PerformanceExperiment:
 
         for label, times in measurements.items():
             min_times_among_repetitions = np.min(times, axis=-1)
-            means = min_times_among_repetitions.mean(axis=-1)
-            stds = min_times_among_repetitions.std(axis=-1)
-            ax.errorbar(self.x_range, means, yerr=stds, marker=".", label=label)
+            plot_mean_and_range(
+                ax, self.x_range, min_times_among_repetitions, marker=".", label=label
+            )
 
         ax.set_ylim(bottom=0)
         ax.ticklabel_format(axis="y", scilimits=(-2, 2))
