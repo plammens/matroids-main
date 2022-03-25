@@ -68,7 +68,7 @@ class PerformanceExperiment:
     timer_functions: tp.Dict[str, tp.Callable[..., float]]
     x_name: str
     x_range: tp.Sequence
-    fixed_variables: tp.Dict[str, tp.Any]
+    fixed_variables: tp.Dict[str, tp.Any] = dataclasses.field(default_factory=dict)
 
     input_generator: tp.Callable[
         ..., tp.Iterable[InputData]
@@ -94,9 +94,7 @@ class PerformanceExperiment:
             for label in self.timer_functions
         }
 
-        for i, x_value in enumerate(
-            tqdm.tqdm(self.x_range, desc=self.title.replace("\n", " / "))
-        ):
+        for i, x_value in enumerate(tqdm.tqdm(self.x_range, desc=self.title)):
             input_variables = self.fixed_variables | {self.x_name: x_value}
             input_generator_instance = self.input_generator(**input_variables)
             inputs = list(itt.islice(input_generator_instance, self.generated_inputs))
