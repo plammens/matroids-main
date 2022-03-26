@@ -71,10 +71,10 @@ PerformanceExperimentGroup(
             timer_functions=timers,
             x_name="n",
             x_range=np.linspace(0, 1000, num=10, dtype=int),
-            input_generator=lambda size: (
+            input_generator=lambda n: (
                 {"matroid": m}
                 for m in mitt.repeatfunc(
-                    functools.partial(generate_2_by_n_matrix_matroid, size)
+                    functools.partial(generate_2_by_n_matrix_matroid, n)
                 )
             ),
             generated_inputs=10,
@@ -91,10 +91,10 @@ PerformanceExperimentGroup(
             timer_functions=timers,
             x_name="n",
             x_range=np.linspace(0, 150, num=15, dtype=int),
-            input_generator=lambda size: (
+            input_generator=lambda n: (
                 {"matroid": m}
                 for m in mitt.repeatfunc(
-                    functools.partial(generate_n_by_n_matrix_matroid, size)
+                    functools.partial(generate_n_by_n_matrix_matroid, n)
                 )
             ),
             generated_inputs=10,
