@@ -2,6 +2,7 @@ import dataclasses
 import functools
 import itertools as itt
 import operator
+import sys
 import typing as tp
 
 import matplotlib.pyplot as plt
@@ -94,14 +95,23 @@ class PerformanceExperiment:
             for label in self.timer_functions
         }
 
-        for i, x_value in enumerate(tqdm.tqdm(self.x_range, desc=self.title)):
+        if self.title is not None:
+            print(self.title, file=sys.stderr)
+
+        for i, x_value in enumerate(tqdm.tqdm(self.x_range, desc="x values")):
+            # generate inputs
             input_variables = self.fixed_variables | {self.x_name: x_value}
             input_generator_instance = self.input_generator(**input_variables)
             inputs = list(itt.islice(input_generator_instance, self.generated_inputs))
-            for label, timer in self.timer_functions.items():
+
+            for label, timer in tqdm.tqdm(
+                self.timer_functions.items(), desc="algorithms", leave=False,
+            ):
                 times = results[label]
-                for j, input_data in enumerate(inputs):
-                    for k in range(self.repeats):
+                for j, input_data in enumerate(
+                    tqdm.tqdm(inputs, desc="generated inputs", leave=False)
+                ):
+                    for k in tqdm.trange(self.repeats, desc="repeats", leave=False):
                         times[i, j, k] = timer(**input_data)
 
         return results
