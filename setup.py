@@ -31,7 +31,7 @@ setup(
     python_requires=">=3.9, <4",
     install_requires=[
         "numpy~=1.21.2",
-        "llist~=0.7.1",
+        "llist==0.7.1",
         "more_itertools~=8.10.0",
     ],
     extras_require=(
