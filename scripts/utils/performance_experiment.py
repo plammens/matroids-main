@@ -207,7 +207,7 @@ class PerformanceExperimentGroup:
             ncols=len(self.experiments),
             squeeze=False,
             sharey="row",
-            figsize=[2 + 4 * len(self.experiments), 4.8],
+            figsize=[1 + 2.75 * len(self.experiments), 3.5],
         )
         fig: plt.Figure
         if title:
