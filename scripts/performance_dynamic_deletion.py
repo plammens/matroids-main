@@ -1,4 +1,4 @@
-import dataclasses
+import copy
 import functools
 import random
 import typing as tp
@@ -9,19 +9,18 @@ from matroids.algorithms.dynamic import (
     DynamicMaximalIndependentSetAlgorithm,
     NaiveDynamic,
     PartialDynamicMaximalIndependentSetAlgorithm,
+    RestartGreedy,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
-from matroids.algorithms.static import maximal_independent_set
-from matroids.matroid import (
-    MutableIntUniformMatroid,
+from utils.generate import (
+    generate_random_graphical_matroid,
 )
-from utils.generate import generate_random_dummy_matroid
-from utils.seed import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
     PerformanceExperimentGroup,
 )
+from utils.seed import set_seed
 from utils.stopwatch import Stopwatch
 
 
@@ -31,44 +30,27 @@ set_seed(2022)
 def input_generator(
     size: int, rank: int, uniform_weights: bool
 ) -> tp.Iterator[InputData]:
-    # in a uniform matroid all that changes from an element to another is the weight
-    # so can reuse the same matroid
-    matroid = generate_random_dummy_matroid(size, rank, uniform_weights=uniform_weights)
-
-    # simulate element selection uniformly at random without replacement
-    elements = list(matroid.ground_set)
     while True:
-        random.shuffle(elements)
-        for element in elements:
+        # reuse same matroid for 10 instances
+        matroid = generate_random_graphical_matroid(
+            size, rank, uniform_weights=uniform_weights
+        )
+        elements = list(matroid.ground_set)
+        for _ in range(10):
             yield {
                 "matroid": matroid,
-                "element_to_remove": element,
+                "element_to_remove": random.choice(elements),
             }
-
-
-def time_restart_greedy(
-    matroid: MutableIntUniformMatroid,
-    element_to_remove: int,
-) -> float:
-    """Time one run of the greedy algorithm; return time in seconds."""
-    # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
-
-    with Stopwatch() as stopwatch:
-        matroid.remove_element(element_to_remove)
-        maximal_independent_set(matroid)
-
-    return stopwatch.measurement
 
 
 def time_partial_dynamic(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
-    matroid: MutableIntUniformMatroid,
-    element_to_remove: int,
+    matroid,
+    element_to_remove,
 ) -> float:
     """Time one run of the given dynamic algorithm; return time in seconds."""
     # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
+    matroid = copy.deepcopy(matroid)
 
     # start generator (only want to time dynamic part)
     remover = algorithm(matroid)
@@ -82,12 +64,12 @@ def time_partial_dynamic(
 
 def time_full_dynamic(
     algorithm: DynamicMaximalIndependentSetAlgorithm,
-    matroid: MutableIntUniformMatroid,
-    element_to_remove: int,
+    matroid,
+    element_to_remove,
 ):
     """Time one run of the given dynamic algorithm; return time in seconds."""
     # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
+    matroid = copy.deepcopy(matroid)
     algorithm_instance = algorithm(matroid)
 
     with Stopwatch() as stopwatch:
@@ -97,7 +79,7 @@ def time_full_dynamic(
 
 
 non_uniform_timers = {
-    "restart_greedy": time_restart_greedy,
+    "restart_greedy": functools.partial(time_full_dynamic, RestartGreedy),
     "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
 }
 
@@ -117,12 +99,12 @@ deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
             title=f"size = {size}",
             timer_functions=non_uniform_timers,
             x_name="rank",
-            x_range=np.linspace(0, size, num=10, dtype=int),
+            x_range=np.linspace(40, size, num=10, dtype=int),
             fixed_variables={"size": size, "uniform_weights": False},
             input_generator=input_generator,
-            generated_inputs=50,
+            generated_inputs=100,
         )
-        for size in [1000]
+        for size in [500]
     ],
 )
 
@@ -138,7 +120,7 @@ deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
             x_range=np.linspace(100, 500, num=10, dtype=int),
             fixed_variables={"rank": rank, "uniform_weights": False},
             input_generator=input_generator,
-            generated_inputs=50,
+            generated_inputs=100,
         )
         for rank in [100]
     ],
@@ -153,7 +135,7 @@ uniform_deletion_fixed_size_varying_rank = PerformanceExperimentGroup(
             title=f"size = {size}",
             timer_functions=uniform_timers,
             x_name="rank",
-            x_range=np.linspace(0, size, num=10, dtype=int),
+            x_range=np.linspace(20, size, num=10, dtype=int),
             fixed_variables={"size": size, "uniform_weights": True},
             input_generator=input_generator,
             generated_inputs=100,
@@ -182,5 +164,5 @@ uniform_deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
 
 deletion_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
 deletion_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
-uniform_deletion_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
-uniform_deletion_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
+uniform_deletion_fixed_size_varying_rank.measure_show_and_save()
+uniform_deletion_fixed_rank_varying_size.measure_show_and_save()

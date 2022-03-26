@@ -1,4 +1,4 @@
-import dataclasses
+import copy
 import functools
 import random
 import typing as tp
@@ -9,19 +9,19 @@ from matroids.algorithms.dynamic import (
     DynamicMaximalIndependentSetAlgorithm,
     NaiveDynamic,
     PartialDynamicMaximalIndependentSetAlgorithm,
+    RestartGreedy,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
-from matroids.algorithms.static import maximal_independent_set
-from matroids.matroid import (
-    MutableIntUniformMatroid,
+from matroids.matroid import MutableMatroid, T
+from utils.generate import (
+    generate_random_graphical_matroid,
 )
-from utils.generate import generate_random_dummy_matroid
-from utils.seed import set_seed
 from utils.performance_experiment import (
     InputData,
     PerformanceExperiment,
     PerformanceExperimentGroup,
 )
+from utils.seed import set_seed
 from utils.stopwatch import Stopwatch
 
 
@@ -29,38 +29,23 @@ set_seed(2022)
 
 
 def input_generator(size: int, rank: int) -> tp.Iterator[InputData]:
-    matroid = generate_random_dummy_matroid(size, rank, uniform_weights=True)
-
-    elements = list(matroid.ground_set)
     while True:
-        random.shuffle(elements)
-        yield {"matroid": matroid, "removal_sequence": elements}
-
-
-def time_restart_greedy(
-    matroid: MutableIntUniformMatroid,
-    removal_sequence: tp.Sequence[int],
-) -> float:
-    """Time one run of the greedy algorithm; return time in seconds."""
-    # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
-
-    with Stopwatch() as stopwatch:
-        for element in removal_sequence:
-            matroid.remove_element(element)
-            maximal_independent_set(matroid)
-
-    return stopwatch.measurement
+        # reuse same matroid for 3 instances
+        matroid = generate_random_graphical_matroid(size, rank, uniform_weights=True)
+        elements = list(matroid.ground_set)
+        for _ in range(3):
+            random.shuffle(elements)
+            yield {"matroid": matroid, "removal_sequence": elements}
 
 
 def time_partial_dynamic(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
-    matroid: MutableIntUniformMatroid,
-    removal_sequence: tp.Sequence[int],
+    matroid: MutableMatroid[T],
+    removal_sequence: tp.Sequence[T],
 ) -> float:
     """Time one run of the given dynamic algorithm; return time in seconds."""
     # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
+    matroid = copy.deepcopy(matroid)
 
     # start generator (only want to time dynamic part)
     remover = algorithm(matroid)
@@ -75,12 +60,12 @@ def time_partial_dynamic(
 
 def time_full_dynamic(
     algorithm: DynamicMaximalIndependentSetAlgorithm,
-    matroid: MutableIntUniformMatroid,
-    removal_sequence: tp.Sequence[int],
+    matroid: MutableMatroid[T],
+    removal_sequence: tp.Sequence[T],
 ):
     """Time one run of the given dynamic algorithm; return time in seconds."""
     # make copy of shared matroid (because it's mutable)
-    matroid = dataclasses.replace(matroid)
+    matroid = copy.deepcopy(matroid)
     algorithm_instance = algorithm(matroid)
 
     with Stopwatch() as stopwatch:
@@ -91,7 +76,7 @@ def time_full_dynamic(
 
 
 timers = {
-    "restart_greedy": time_restart_greedy,
+    "restart_greedy": functools.partial(time_full_dynamic, RestartGreedy),
     "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
     "uniform_weights_dynamic": functools.partial(
         time_partial_dynamic, dynamic_removal_maximal_independent_set_uniform_weights
@@ -100,7 +85,9 @@ timers = {
 
 # versions that divide total time by number of removals
 timers_per_removal = {
-    label: lambda _timer=timer, **kwargs: _timer(**kwargs) / kwargs["matroid"].size
+    label: lambda _timer=timer, **variables: (
+        _timer(**variables) / len(variables["matroid"].ground_set)
+    )
     for label, timer in timers.items()
 }
 
@@ -114,10 +101,11 @@ size_experiments = PerformanceExperimentGroup(
             title=f"size = {size}",
             timer_functions=timers,
             x_name="rank",
-            x_range=np.linspace(0, size, num=10, dtype=int),
+            x_range=np.linspace(25, size, num=10, dtype=int),
             fixed_variables={"size": size},
             input_generator=input_generator,
-            generated_inputs=3,
+            generated_inputs=15,
+            repeats=3,
         )
         for size in [200]
     ],
@@ -132,12 +120,13 @@ rank_experiments = PerformanceExperimentGroup(
             title=f"rank = {rank}",
             timer_functions=timers_per_removal,
             x_name="size",
-            x_range=np.linspace(100, 500, num=10, dtype=int),
+            x_range=np.linspace(100, 400, num=10, dtype=int),
             fixed_variables={"rank": rank},
             input_generator=input_generator,
-            generated_inputs=3,
+            generated_inputs=15,
+            repeats=3,
         )
-        for rank in [5, 10, 15]
+        for rank in [30, 45, 60]
     ],
 )
 

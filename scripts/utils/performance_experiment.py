@@ -75,7 +75,7 @@ class PerformanceExperiment:
         ..., tp.Iterable[InputData]
     ] = lambda **variables: itt.repeat(variables)
     generated_inputs: int = 1
-    repeats: int = 3
+    repeats: int = 10
 
     title: tp.Optional[str] = None
 
@@ -190,10 +190,6 @@ class PerformanceExperimentGroup:
 
     experiments: tp.Sequence[PerformanceExperiment]
 
-    import cachetools
-    from cachetools_ext.fs import FSLRUCache
-
-    @cachetools.cached(cache=FSLRUCache(maxsize=100), key=lambda x: x.identifier)
     def measure_performance(self) -> tp.Tuple[PerformanceMeasurements, ...]:
         """Run each of the experiments in the group."""
         return tuple(e.measure_performance() for e in self.experiments)
