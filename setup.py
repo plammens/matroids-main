@@ -21,6 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Paolo Lammens (2475444L)",
     author_email="2475444L@student.gla.ac.uk",
+    url="https://stgit.dcs.gla.ac.uk/2475444l/l4-project-matroids-main",
     project_urls={
         "Source": "https://stgit.dcs.gla.ac.uk/2475444l/l4-project-matroids-main",
     },
