@@ -77,6 +77,7 @@ To run a script in the `scripts` directory, do the following from the repository
 python -O scripts/some_script.py
 ```
 
+(Replace `python` with `python3` in *nix as appropriate.) 
 The `-O` flag is to disable assertions (to get the most accurate performance measurements).
 
 
