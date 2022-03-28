@@ -7,7 +7,7 @@ import typing as tp
 import llist
 
 from matroids.matroid import MutableMatroid, T
-from matroids.utils.linked_list_set import LinkedListSet
+from matroids.utils import LinkedListSet
 from ..static import maximal_independent_set
 
 
