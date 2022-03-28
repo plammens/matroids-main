@@ -5,8 +5,10 @@ import operator
 import sys
 import typing as tp
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.style
+import matplotlib.ticker
 import matplotx.styles
 import numpy as np
 import tqdm
@@ -138,9 +140,8 @@ class PerformanceExperiment:
         What is plotted is (for each procedure) these means +- std as errorbars (y axis)
         vs the x value (x axis).
 
-        :param plot_kind: Plot plot_kind: mean +- std as error bars or mean with range as
-        filled
-            between solid color.
+        :param plot_kind: Plot plot_kind: mean +- std as error bars or mean with range
+            as filled between solid color.
         :param ax: Axes object on which to plot.
         :param measurements: Measurements to plot, obtained from
             :meth:`measure_performance`.
@@ -175,6 +176,8 @@ class PerformanceExperiment:
 
         ax.set_ylim(bottom=0, top=1.05 * max(np.max(a) for a in all_means))
         ax.ticklabel_format(axis="y", scilimits=(-2, 2))
+
+        ax.xaxis.set_major_formatter(mpl.ticker.EngFormatter())
 
     def measure_and_plot(self, ax: plt.Axes) -> None:
         """
