@@ -2,51 +2,59 @@
 Performance check for matroids.utils.random_access_set.RandomAccessMutableSet.
 """
 
-import operator
+import functools
 import random
-from typing import Set, Tuple
+import typing as tp
 
-import matplotlib.pyplot as plt
-import perfplot
+import numpy as np
 
 from matroids.utils.random_access_set import RandomAccessMutableSet
+from utils.performance_experiment import (
+    InputData,
+    PerformanceExperiment,
+    PerformanceExperimentGroup,
+)
 from utils.seed import set_seed
+from utils.stopwatch import Stopwatch
 
 
 set_seed(2022)
 
 
-SetupData = Tuple[
-    int,
-    Set,
-    RandomAccessMutableSet,
-    int,
-]
+def input_generator(size: int) -> tp.Iterator[InputData]:
+    while True:
+        yield {"size": size, "element_to_remove": random.randrange(size)}
 
 
-def setup(n: int) -> SetupData:
-    return n, set(range(n)), RandomAccessMutableSet(range(n)), random.randrange(n)
+def time_set_remove(
+    set_class: tp.Type[tp.MutableSet], size: int, element_to_remove: int
+) -> float:
+    set_instance = set_class(range(size))  # noqa
+
+    with Stopwatch() as stopwatch:
+        set_instance.remove(element_to_remove)
+
+    return stopwatch.measurement
 
 
-def set_remove(setup_data: SetupData):
-    n, s, _, x = setup_data
-    s.remove(x)
-    return s
+timers = {
+    "builtins.set": functools.partial(time_set_remove, set),
+    "RandomAccessMutableSet": functools.partial(
+        time_set_remove, RandomAccessMutableSet
+    ),
+}
 
 
-def random_access_set_remove(setup_data: SetupData):
-    n, _, s, x = setup_data
-    s.remove(x)
-    return s
-
-
-results = perfplot.bench(
-    setup=setup,
-    kernels=[set_remove, random_access_set_remove],
-    n_range=list(range(100, 10000, 100)),
-    xlabel="size",
-    target_time_per_measurement=0.0,  # working with mutable data; can't repeat
-    equality_check=operator.eq,
-)
-results.plot()
-plt.show()
+PerformanceExperimentGroup(
+    identifier="random_access_set_remove",
+    title="Time for removing a random element from the set",
+    experiments=[
+        PerformanceExperiment(
+            timer_functions=timers,
+            x_name="size",
+            x_range=np.linspace(100, 8_000, num=10, dtype=int),
+            input_generator=input_generator,
+            generated_inputs=100,
+        )
+    ],
+).measure_show_and_save()
