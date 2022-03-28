@@ -1,130 +1,129 @@
-"""Empirical analysis of the naive dynamic algorithm on real graph datasets."""
+"""Empirical analysis of the dynamic algorithms on real graph datasets."""
 
-from typing import Callable, Generator, List, Mapping, Tuple
-
-import matplotlib.pyplot as plt
-import networkx as nx
-import numpy as np
-import perfplot
+import copy
+import functools
+import itertools as itt
+import random
+import typing as tp
 
 from matroids.algorithms.dynamic import (
+    DynamicMaximalIndependentSetAlgorithm,
     NaiveDynamic,
+    PartialDynamicMaximalIndependentSetAlgorithm,
+    RestartGreedy,
     dynamic_removal_maximal_independent_set_uniform_weights,
 )
-from matroids.algorithms.static import maximal_independent_set
-from matroids.matroid import EdgeType, GraphicalMatroid, MutableMatroid, set_weights
+from matroids.matroid import GraphicalMatroid, MutableMatroid, T, set_weights
+from utils.performance_experiment import (
+    InputData,
+    PerformanceExperiment,
+    PerformanceExperimentGroup,
+)
+from utils.seed import set_seed
 from utils.slndc import load_facebook_dataset
+from utils.stopwatch import Stopwatch
 
 
-rng = np.random.default_rng(seed=2021)
+set_seed(2022)
+
 
 # download a graph dataset from the Stanford Large Network Dataset Collection
 # index by number of edges (size of ground set)
-networks = {len(g.edges): g for g in load_facebook_dataset()}
+fb_dataset = load_facebook_dataset()
+networks = {
+    num_edges: list(graphs)
+    for num_edges, graphs in itt.groupby(fb_dataset, key=lambda g: len(g.edges))
+}
 
 
-# define the setup function, mapping input size to setup data
+def input_generator(
+    size: int, uniform_weights: bool, number_of_deletions: int
+) -> tp.Iterator[InputData]:
+    for graph in itt.cycle(networks[size]):
+        graph = copy.deepcopy(graph)
+        if not uniform_weights:
+            set_weights(graph, {e: random.random() for e in graph.edges})
 
-SetupData = Tuple[
-    List[EdgeType],
-    MutableMatroid,
-    MutableMatroid,
-    NaiveDynamic,
-    MutableMatroid,
-    Generator,
-]
+        matroid = GraphicalMatroid(graph)
+        elements = list(matroid.ground_set)
 
-
-def make_network_copy(network: nx.Graph, weights: Mapping[EdgeType, float]) -> nx.Graph:
-    copy = network.copy()
-    set_weights(copy, weights)
-    return copy
-
-
-def make_setup(
-    uniform_weights: bool, number_of_deletions: int
-) -> Callable[[int], SetupData]:
-    def setup(n: int) -> SetupData:
-        network: nx.Graph = networks[n]
-        weights = {} if uniform_weights else {e: rng.random() for e in network.edges}
-        matroid_copy1 = GraphicalMatroid(make_network_copy(network, weights))
-        matroid_copy2 = GraphicalMatroid(make_network_copy(network, weights))
-        matroid_copy3 = GraphicalMatroid(make_network_copy(network, weights))
-
-        # start generator for naive dynamic algorithm so as to only test removal step
-        naive = NaiveDynamic(matroid_copy2)
-        maximal_set = naive.current
-
-        # start generator for uniform weights dynamic algorithm
-        remover_generator3 = dynamic_removal_maximal_independent_set_uniform_weights(
-            matroid_copy3
-        )
-        remover_generator3.send(None)
-
-        # choose an element to remove from the maximal independent set
-        # (much more interesting than removing another element, which is trivial)
-        selected_elements = list(maximal_set)
-        # not using rng.choice here because it returns a 2D array (tuples get converted)
-        rng.shuffle(selected_elements)
-        elements_to_remove = selected_elements[:number_of_deletions]
-
-        return (
-            elements_to_remove,
-            matroid_copy1,
-            matroid_copy2,
-            naive,
-            matroid_copy3,
-            remover_generator3,
-        )
-
-    return setup
+        # reuse same matroid for 5 instances
+        for _ in range(5):
+            random.shuffle(elements)
+            yield {
+                "matroid": matroid,
+                "removal_sequence": elements[:number_of_deletions],
+            }
 
 
-# define the two kernels
+def time_partial_dynamic(
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
+    matroid: MutableMatroid[T],
+    removal_sequence: tp.Sequence[T],
+) -> float:
+    """Time one run of the given dynamic algorithm; return time in seconds."""
+    # make copy of shared matroid (because it's mutable)
+    matroid = copy.deepcopy(matroid)
+
+    # start generator (only want to time dynamic part)
+    remover = algorithm(matroid)
+    remover.send(None)
+
+    with Stopwatch() as stopwatch:
+        for element in removal_sequence:
+            remover.send(element)
+
+    return stopwatch.measurement
 
 
-def restart_greedy(setup_data: SetupData):
-    elements_to_remove, matroid, *_ = setup_data
-    results = []
-    for element in elements_to_remove:
-        matroid.remove_element(element)
-        results.append(maximal_independent_set(matroid))
-    return results
+def time_full_dynamic(
+    algorithm: DynamicMaximalIndependentSetAlgorithm,
+    matroid: MutableMatroid[T],
+    removal_sequence: tp.Sequence[T],
+):
+    """Time one run of the given dynamic algorithm; return time in seconds."""
+    # make copy of shared matroid (because it's mutable)
+    matroid = copy.deepcopy(matroid)
+    algorithm_instance = algorithm(matroid)
+
+    with Stopwatch() as stopwatch:
+        for element in removal_sequence:
+            algorithm_instance.remove_element(element)
+
+    return stopwatch.measurement
 
 
-def naive_dynamic(setup_data: SetupData):
-    elements_to_remove, _, _, naive, *_ = setup_data
-    return [naive.remove_element(element) for element in elements_to_remove]
+non_uniform_timers = {
+    "restart_greedy": functools.partial(time_full_dynamic, RestartGreedy),
+    "naive_dynamic": functools.partial(time_full_dynamic, NaiveDynamic),
+}
 
 
-def uniform_weights_dynamic(setup_data: SetupData):
-    elements_to_remove, *_, remover_generator = setup_data
-    return [remover_generator.send(element) for element in elements_to_remove]
-
-
-plots = {
-    "50 deletions in sequence on the FB dataset, random weights": (
-        sorted(networks.keys())[:7],
-        make_setup(uniform_weights=False, number_of_deletions=50),
-        [restart_greedy, naive_dynamic],
-    ),
-    "50 deletions in sequence on the FB dataset, uniform weights": (
-        sorted(networks.keys())[:7],
-        make_setup(uniform_weights=True, number_of_deletions=50),
-        [restart_greedy, naive_dynamic, uniform_weights_dynamic],
+uniform_timers = non_uniform_timers | {
+    "uniform_weights_dynamic": functools.partial(
+        time_partial_dynamic, dynamic_removal_maximal_independent_set_uniform_weights
     ),
 }
 
-for title, (n_range, factory, kernels) in plots.items():
-    results = perfplot.bench(
-        n_range=list(n_range),
-        setup=factory,
-        kernels=kernels,
-        xlabel="number of edges",
-        target_time_per_measurement=0.0,  # avoid repetitions, mutable operations
-        equality_check=None,  # for speed
-    )
-    results.plot()
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
+PerformanceExperimentGroup(
+    identifier="dynamic_fb",
+    title=f"Total time over {(num_deletions := 50)} deletions",
+    experiments=[
+        PerformanceExperiment(
+            title=f"uniform_weights = {uniform}",
+            timer_functions=uniform_timers if uniform else non_uniform_timers,
+            x_name="size",
+            x_range=sorted(networks.keys())[:7],  # smallest 7, otherwise takes too long
+            fixed_variables={
+                "uniform_weights": uniform,
+                "number_of_deletions": num_deletions,
+            },
+            input_generator=input_generator,
+            generated_inputs=9,
+            repeats=3,
+        )
+        for uniform in [False, True]
+    ],
+).measure_show_and_save(
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)}
+)
