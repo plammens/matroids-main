@@ -25,6 +25,15 @@ The basic file structure is the following:
 
 - **Python 3.9 or later** –
 this repository has been written and tested in CPython 3.9.0
+- **Python 3.9 development headers** - used for compiling C extensions of some of the
+  dependencies.
+  On Windows they are usually automatically installed by the Python 3.9 installer.
+  On *nix, they can be installed with `apt` as follows:
+  ```bash
+  sudo apt install python3.9-dev
+  ```
+  See [here](https://stackoverflow.com/a/21530768/6117426) for instructions for other package managers.
+
 
 ### [Optional] Step 0: Activate a virtual Python environment
 
@@ -48,6 +57,8 @@ To install the main packages, run the following from the repository root:
 pip install -e .[all]
 ```
 This automatically installs the required dependencies for the main packages.
+Some of the dependencies require compiling C extensions, for which the corresponding Python development headers are needed.
+If installation fails mentioning a missing "Python.h" header, this is because they aren't installed—see [basic requirements](#basic-requirements) for installation instructions.
 
 The `[all]` syntax indicates to install all extra dependencies, namely for tests and scripts.
 Alternatively one can specify, for example, `[tests,scripts]`, only `[tests]`, or nothing at all (`pip install -e .`), but then only the corresponding components will work.
