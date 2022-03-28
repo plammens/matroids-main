@@ -9,8 +9,12 @@ from utils.performance_experiment import (
     PerformanceExperiment,
     PerformanceExperimentGroup,
 )
+from utils.seed import set_seed
 from utils.slndc import load_facebook_dataset
 from utils.stopwatch import make_timer
+
+
+set_seed(2022)
 
 
 # download a graph dataset from the Stanford Large Network Dataset Collection

@@ -1,6 +1,7 @@
 import dataclasses
 import functools
 import itertools as itt
+import logging
 import operator
 import sys
 import typing as tp
@@ -13,8 +14,11 @@ import matplotx.styles
 import numpy as np
 import tqdm
 
+from utils.misc import ROOT_OUTPUT_PATH, ensure_directory_exists
 from utils.plotting import plot_mean_and_range
-from utils.save import save_figure
+
+
+logger = logging.getLogger(__name__)
 
 
 MATPLOTLIB_STYLE = matplotx.styles.dufte | {
@@ -195,6 +199,10 @@ class PerformanceExperimentGroup:
 
     experiments: tp.Sequence[PerformanceExperiment]
 
+    import cachetools
+    from cachetools_ext.fs import FSLRUCache
+
+    @cachetools.cached(cache=FSLRUCache(maxsize=100), key=lambda x: x.identifier)
     def measure_performance(self) -> tp.Tuple[PerformanceMeasurements, ...]:
         """Run each of the experiments in the group."""
         return tuple(e.measure_performance() for e in self.experiments)
@@ -254,7 +262,12 @@ class PerformanceExperimentGroup:
         fig = self.plot_performance(
             all_measurements, title=False, legend_kwargs=legend_kwargs, **kwargs
         )
-        save_figure(fig, identifiers=[self.identifier])
+
+        output_path = ROOT_OUTPUT_PATH / "figures" / f"{self.identifier}.pdf"
+        logger.info(f"Saving figure for {self.identifier} to {output_path}")
+        ensure_directory_exists(output_path.parent)
+        fig.savefig(output_path, bbox_inches="tight")
+        plt.close(fig)
 
     def measure_show_and_save(self, **kwargs) -> None:
         """Shortcut for running the experiments and showing the plot in one step."""

@@ -16,7 +16,11 @@ from utils.performance_experiment import (
     PerformanceExperiment,
     PerformanceExperimentGroup,
 )
+from utils.seed import set_seed
 from utils.stopwatch import make_timer
+
+
+set_seed(2022)
 
 
 timers = {"greedy": make_timer(maximal_independent_set)}
