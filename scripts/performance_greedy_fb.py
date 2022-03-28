@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 """Empirical analysis of the greedy algorithm on real graph datasets."""
+
 import itertools as itt
 import typing as tp
 

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Runs performance experiments for performing an exhausting sequence of deletions.
+"""
+
 import copy
 import functools
 import random

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Runs performance experiments for removing elements under the dynamic algorithms.
+"""
+
 import copy
 import functools
 import random

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Empirical analysis of the dynamic algorithms on real graph datasets."""
 
 import copy

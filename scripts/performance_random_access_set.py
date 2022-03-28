@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Performance check for matroids.utils.random_access_set.RandomAccessMutableSet.
 """

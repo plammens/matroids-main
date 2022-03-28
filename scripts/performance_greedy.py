@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 """Script to generate some performance graphs for the greedy algorithm."""
+
 import functools
 import itertools as itt
 import more_itertools as mitt
