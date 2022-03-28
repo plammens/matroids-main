@@ -8,7 +8,7 @@ from typing import Callable, Sequence
 
 import matplotlib.pyplot as plt
 
-from utils.misc import ROOT_OUTPUT_PATH, ensure_output_dir_exists
+from utils.misc import ROOT_OUTPUT_PATH, ensure_directory_exists
 
 
 VALID_CHARS = string.ascii_letters + string.digits + " "
@@ -45,7 +45,7 @@ def save_output(
         ]
     )
     logger.info(message)
-    ensure_output_dir_exists(output_dir)
+    ensure_directory_exists(output_dir)
     save_func(str(path))
 
 

@@ -29,12 +29,10 @@ def compute_missing_edges(
     return missing_edges
 
 
-def ensure_output_dir_exists(path: os.PathLike = ROOT_OUTPUT_PATH) -> pathlib.Path:
-    """Create any missing directories in the given path."""
+def ensure_directory_exists(
+    path: tp.Union[str, os.PathLike] = ROOT_OUTPUT_PATH
+) -> pathlib.Path:
+    """Create any missing directories in the given directory path."""
     path = pathlib.Path(path)
-    if not path.exists():
-        ensure_output_dir_exists(path.parent)
-        os.mkdir(path)
-    elif not path.is_dir():
-        raise IOError("Output path {} already exists and is a file".format(path))
+    path.mkdir(parents=True, exist_ok=True)
     return path
