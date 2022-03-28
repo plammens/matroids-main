@@ -18,6 +18,8 @@ The basic file structure is the following:
 - `tests/`: Source root for test modules to be run with `pytest`.
 - `setup.py`: Contains project metadata such as dependencies and enables installation through `pip install`.
 
+> **Note:** the package version is automatically inferred from Git tags, so do not delete the `.git` directory from the submission. 
+
 
 ## Setup
 
