@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/../l4-project-matroids-dissertation/.idea/l4-project-matroids-dissertation.iml" filepath="$PROJECT_DIR$/../l4-project-matroids-dissertation/.idea/l4-project-matroids-dissertation.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/l4-project-matroids-main.iml" filepath="$PROJECT_DIR$/.idea/l4-project-matroids-main.iml" />
-    </modules>
-  </component>
-</project>
