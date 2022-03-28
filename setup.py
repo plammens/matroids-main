@@ -38,6 +38,7 @@ setup(
         extras_require := {
             "test": [
                 "pytest~=6.2.5",
+                "pytest-cases==3.6.11",
             ],
             "scripts": [
                 "matplotlib~=3.4.3",

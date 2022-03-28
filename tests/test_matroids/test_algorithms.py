@@ -10,6 +10,7 @@ import more_itertools as mitt
 import networkx as nx
 import numpy as np
 import pytest
+import pytest_cases
 
 from matroids.algorithms.dynamic.full import (
     DynamicMaximalIndependentSetAlgorithm,
@@ -36,8 +37,9 @@ from matroids.matroid import (
 from matroids.utils import RandomAccessMutableSet
 
 
-DYNAMIC_REMOVAL_ALGORITHMS = [
-]
+# ------------------------------------ test cases -------------------------------------
+
+DYNAMIC_REMOVAL_ALGORITHMS = []
 
 DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS = [
     dynamic_removal_maximal_independent_set_uniform_weights,
@@ -47,6 +49,30 @@ FULL_DYNAMIC_ALGORITHMS = [
     RestartGreedy,
     NaiveDynamic,
 ]
+
+
+@pytest_cases.case()
+@pytest_cases.parametrize("seed", range(10))
+def case_random_graphical(seed: int) -> GraphicalMatroid:
+    return _random_graphical_matroid(uniform_weights=False, seed=seed)
+
+
+@pytest_cases.case()
+@pytest_cases.parametrize("seed", range(10))
+def case_random_graphical_uniform_weights(seed: int) -> GraphicalMatroid:
+    return _random_graphical_matroid(uniform_weights=True, seed=seed)
+
+
+def _random_graphical_matroid(*, uniform_weights: bool, seed: tp.Optional[int] = None):
+    rng = np.random.default_rng(seed=seed)
+    graph = nx.gnp_random_graph(n=50, p=0.2, seed=seed)
+    if not uniform_weights:
+        weights = {edge: rng.uniform(-1.0, 1.0) for edge in graph.edges}
+        set_weights(graph, weights)
+    return GraphicalMatroid(graph)
+
+
+# ---------------------------------- test functions -----------------------------------
 
 
 def test_maximalIndependentSet_linearMatroid_correct():
@@ -86,52 +112,6 @@ def test_maximalIndependentSet_matroidWithNegativeWeights_negativeWeightsIgnored
     assert result == {0, 1}
 
 
-@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_ALGORITHMS)
-def test_dynamicRemovalMaximalIndependentSet_basicSequence_correct(
-    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
-):
-    graph = nx.complete_graph(4)
-    weights = {(0, 1): 2.0, (2, 3): 4.5, (1, 2): -1.0}
-    set_weights(graph, weights)
-
-    matroid = GraphicalMatroid(graph)
-    remover = algorithm(matroid)
-
-    # initial MIS
-    maximal = remover.send(None)
-    assert len(maximal) == 3
-    assert {(2, 3), (0, 1)}.issubset(maximal) and (1, 2) not in maximal
-
-    # remove highest weight element
-    maximal = remover.send((2, 3))
-    assert len(maximal) == 3
-    assert (0, 1) in maximal and (1, 2) not in maximal
-
-    # remove another element
-    maximal = remover.send((0, 1))
-    assert maximal == {(0, 2), (0, 3), (1, 3)}
-
-    # remove another element, now only two edges with non-negative weight remain
-    maximal = remover.send((1, 3))
-    assert maximal == {(0, 3), (0, 2)}
-
-    # remove all remaining elements, check that generator closes
-    for edge in {(0, 3), (0, 2), (1, 2)}:
-        maximal = remover.send(edge)
-    assert maximal == set()
-    with pytest.raises(StopIteration):
-        remover.send(None)
-
-
-@pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_ALGORITHMS)
-def test_dynamicRemovalMaximalIndependentSet_randomGraph_correct(
-    algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
-):
-    _test_dynamicRemovalMaximalIndependentSet_randomGraph(
-        algorithm, uniform_weights=False
-    )
-
-
 @pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS)
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
@@ -162,12 +142,14 @@ def test_dynamicRemovalMaximalIndependentSet_uniformWeightsBasicSequence_correct
 
 
 @pytest.mark.parametrize("algorithm", DYNAMIC_REMOVAL_UNIFORM_WEIGHTS_ALGORITHMS)
+@pytest_cases.parametrize_with_cases(
+    "matroid", cases=case_random_graphical_uniform_weights
+)
 def test_dynamicRemovalMaximalIndependentSet_uniformWeightsRandomGraph_correct(
     algorithm: PartialDynamicMaximalIndependentSetAlgorithm,
+    matroid: MutableMatroid,
 ):
-    _test_dynamicRemovalMaximalIndependentSet_randomGraph(
-        algorithm, uniform_weights=True
-    )
+    _test_dynamicRemovalMaximalIndependentSet(algorithm, matroid)
 
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
@@ -280,16 +262,17 @@ def test_fullDynamicMaximalIndependentSet_basicSequence3_correct(
 
 
 @pytest.mark.parametrize("algorithm", FULL_DYNAMIC_ALGORITHMS)
+@pytest_cases.parametrize_with_cases("matroid", cases=case_random_graphical)
 def test_fullDynamicMaximalIndependentSet_randomGraph(
     algorithm: DynamicMaximalIndependentSetAlgorithm,
+    matroid: MutableMatroid,
 ):
-    _test_fullDynamicMaximalIndependentSet_randomGraph(algorithm)
+    _test_fullDynamicMaximalIndependentSet(algorithm, matroid)
 
 
-def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
-    algorithm: PartialDynamicMaximalIndependentSetAlgorithm, uniform_weights: bool
+def _test_dynamicRemovalMaximalIndependentSet(
+    algorithm: PartialDynamicMaximalIndependentSetAlgorithm, matroid: MutableMatroid
 ):
-    matroid = _random_graphical_matroid(uniform_weights)
     remover = algorithm(matroid)
 
     # select sequence of elements to remove
@@ -302,10 +285,9 @@ def _test_dynamicRemovalMaximalIndependentSet_randomGraph(
         _check_removal(remover.send, matroid, to_remove)
 
 
-def _test_fullDynamicMaximalIndependentSet_randomGraph(
-    algorithm: DynamicMaximalIndependentSetAlgorithm, uniform_weights: bool = False
+def _test_fullDynamicMaximalIndependentSet(
+    algorithm: DynamicMaximalIndependentSetAlgorithm, matroid: MutableMatroid
 ):
-    matroid = _random_graphical_matroid(uniform_weights)
     algorithm_instance = algorithm(matroid)
 
     # store elements as a sequence for use with random.choice
@@ -326,14 +308,6 @@ def _test_fullDynamicMaximalIndependentSet_randomGraph(
             possible_elements_to_remove.remove(to_remove)
         else:
             assert False
-
-
-def _random_graphical_matroid(uniform_weights: bool):
-    graph = nx.gnp_random_graph(n=50, p=0.2)
-    if not uniform_weights:
-        weights = {edge: random.uniform(-1.0, 1.0) for edge in graph.edges}
-        set_weights(graph, weights)
-    return GraphicalMatroid(graph)
 
 
 def _check_addition(
