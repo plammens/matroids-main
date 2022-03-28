@@ -17,10 +17,15 @@ class RandomAccessMutableSet(
     """
 
     def __init__(self, iterable):
-        self._list: tp.List[T] = list(iterable)
-        self._element_to_index: tp.Dict[T, int] = {
-            x: i for i, x in enumerate(self._list)
-        }
+        list_ = []
+        element_to_index = {}
+        for x in iterable:
+            if x not in element_to_index:
+                element_to_index[x] = len(list_)
+                list_.append(x)
+
+        self._list: tp.List[T] = list_
+        self._element_to_index: tp.Dict[T, int] = element_to_index
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({set(self)})"
