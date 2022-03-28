@@ -199,10 +199,6 @@ class PerformanceExperimentGroup:
 
     experiments: tp.Sequence[PerformanceExperiment]
 
-    import cachetools
-    from cachetools_ext.fs import FSLRUCache
-
-    @cachetools.cached(cache=FSLRUCache(maxsize=100), key=lambda x: x.identifier)
     def measure_performance(self) -> tp.Tuple[PerformanceMeasurements, ...]:
         """Run each of the experiments in the group."""
         return tuple(e.measure_performance() for e in self.experiments)
