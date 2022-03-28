@@ -162,7 +162,15 @@ uniform_deletion_fixed_rank_varying_size = PerformanceExperimentGroup(
 )
 
 
-deletion_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
-deletion_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
+deletion_fixed_size_varying_rank.measure_show_and_save(
+    plot_kind="mean&range",
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)},
+)
+deletion_fixed_rank_varying_size.measure_show_and_save(
+    plot_kind="mean&range",
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)},
+)
 uniform_deletion_fixed_size_varying_rank.measure_show_and_save()
-uniform_deletion_fixed_rank_varying_size.measure_show_and_save()
+uniform_deletion_fixed_rank_varying_size.measure_show_and_save(
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)},
+)

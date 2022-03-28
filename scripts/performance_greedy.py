@@ -43,7 +43,9 @@ PerformanceExperimentGroup(
         )
         for rank in [50, 1000]
     ],
-).measure_show_and_save()
+).measure_show_and_save(
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)}
+)
 
 
 PerformanceExperimentGroup(
@@ -60,7 +62,7 @@ PerformanceExperimentGroup(
             generated_inputs=1,
         )
     ],
-).measure_show_and_save()
+).measure_show_and_save(legend_kwargs={"loc": "upper center"})
 
 
 PerformanceExperimentGroup(
@@ -80,7 +82,7 @@ PerformanceExperimentGroup(
             generated_inputs=10,
         )
     ],
-).measure_show_and_save()
+).measure_show_and_save(legend_kwargs={"loc": "upper center"})
 
 
 PerformanceExperimentGroup(
@@ -100,4 +102,4 @@ PerformanceExperimentGroup(
             generated_inputs=10,
         )
     ],
-).measure_show_and_save()
+).measure_show_and_save(legend_kwargs={"loc": "upper center"})

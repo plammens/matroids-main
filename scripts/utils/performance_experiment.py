@@ -105,7 +105,9 @@ class PerformanceExperiment:
             inputs = list(itt.islice(input_generator_instance, self.generated_inputs))
 
             for label, timer in tqdm.tqdm(
-                self.timer_functions.items(), desc="algorithms", leave=False,
+                self.timer_functions.items(),
+                desc="algorithms",
+                leave=False,
             ):
                 times = results[label]
                 for j, input_data in enumerate(
@@ -199,9 +201,12 @@ class PerformanceExperimentGroup:
         all_measurements: tp.Sequence[PerformanceMeasurements],
         plot_kind: tp.Literal["mean&std", "mean&range"] = "mean&std",
         title: bool = True,
-        manual_legend_placement=False,
+        legend_kwargs: tp.Dict[str, tp.Any] = None,
     ) -> plt.Figure:
         """Creates a new figure and plots the measurements of each experiment."""
+        if legend_kwargs is None:
+            legend_kwargs = {"loc": "center right"}
+
         fig, axes = plt.subplots(
             nrows=1,
             ncols=len(self.experiments),
@@ -224,12 +229,7 @@ class PerformanceExperimentGroup:
             for handles, labels in map(plt.Axes.get_legend_handles_labels, axes.flat)
         ]
         artist_dict = functools.reduce(operator.or_, artist_dicts)  # dict union
-        kwargs = (
-            {"loc": "upper left", "bbox_to_anchor": (1.0, 1.0)}
-            if manual_legend_placement
-            else {"loc": "center right"}
-        )
-        fig.legend(artist_dict.values(), artist_dict.keys(), **kwargs)
+        fig.legend(artist_dict.values(), artist_dict.keys(), **legend_kwargs)
 
         fig.tight_layout()
         return fig
@@ -241,15 +241,23 @@ class PerformanceExperimentGroup:
         plt.show()
 
     def save_performance_figure(
-        self, all_measurements: tp.Sequence[PerformanceMeasurements], **kwargs
+        self,
+        all_measurements: tp.Sequence[PerformanceMeasurements],
+        legend_kwargs: tp.Dict[str, tp.Any] = None,
+        **kwargs,
     ):
+        if legend_kwargs is None:
+            legend_kwargs = {"loc": "upper left", "bbox_to_anchor": (1.0, 1.0)}
         fig = self.plot_performance(
-            all_measurements, title=False, manual_legend_placement=True, **kwargs
+            all_measurements, title=False, legend_kwargs=legend_kwargs, **kwargs
         )
         save_figure(fig, identifiers=[self.identifier])
 
     def measure_show_and_save(self, **kwargs) -> None:
         """Shortcut for running the experiments and showing the plot in one step."""
         measurements = self.measure_performance()
+        legend_kwargs = kwargs.pop("legend_kwargs", None)
         self.show_performance(measurements, **kwargs)
-        self.save_performance_figure(measurements, **kwargs)
+        self.save_performance_figure(
+            measurements, legend_kwargs=legend_kwargs, **kwargs
+        )

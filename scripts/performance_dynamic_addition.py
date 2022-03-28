@@ -98,5 +98,11 @@ addition_fixed_rank_varying_size = PerformanceExperimentGroup(
 )
 
 
-addition_fixed_size_varying_rank.measure_show_and_save(plot_kind="mean&range")
-addition_fixed_rank_varying_size.measure_show_and_save(plot_kind="mean&range")
+addition_fixed_size_varying_rank.measure_show_and_save(
+    plot_kind="mean&range",
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)},
+)
+addition_fixed_rank_varying_size.measure_show_and_save(
+    plot_kind="mean&range",
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)},
+)

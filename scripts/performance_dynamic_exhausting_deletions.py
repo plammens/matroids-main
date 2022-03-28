@@ -92,7 +92,7 @@ timers_per_removal = {
 }
 
 
-size_experiments = PerformanceExperimentGroup(
+rank_experiments = PerformanceExperimentGroup(
     identifier="exhausting_deletions_fixed_size_varying_rank",
     title="Total time over exhausting sequence of deletions\n"
     "uniform weights, fixed size, varying rank",
@@ -111,7 +111,7 @@ size_experiments = PerformanceExperimentGroup(
     ],
 )
 
-rank_experiments = PerformanceExperimentGroup(
+size_experiments = PerformanceExperimentGroup(
     identifier="exhausting_deletions_normalised_fixed_rank_varying_size",
     title="Time per deletion over exhausting sequence of deletions\n"
     f"uniform weights, varying size, fixed rank",
@@ -131,5 +131,7 @@ rank_experiments = PerformanceExperimentGroup(
 )
 
 
-size_experiments.measure_show_and_save()
 rank_experiments.measure_show_and_save()
+size_experiments.measure_show_and_save(
+    legend_kwargs={"loc": "upper center", "bbox_to_anchor": (0.5, 0.0)}
+)

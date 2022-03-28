@@ -42,4 +42,4 @@ PerformanceExperimentGroup(
             generated_inputs=5,
         )
     ],
-).measure_show_and_save()
+).measure_show_and_save(legend_kwargs={"loc": "upper center"})
