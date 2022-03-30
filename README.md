@@ -12,9 +12,11 @@ and implementations of some static and dynamic maximal independent set algorithm
 
 The basic file structure is the following:
 
-- `src/`: Source root for the main Python packages that provide the functionality of the project (e.g. matroid classes, algorithms).
+- `src/`: Source root for the main Python packages that provide the functionality of the project.
+  - `matroids`: The main Python package exported by this project.
 - `scripts/`: Contains individual Python scripts for e.g. performing execution time experiments.
   - `utils`: Python package containing miscellaneous utilities used by the scripts. The reason it's included under `scripts/` and not in `src/` is to avoid having to export it as a top-level package during installation, because Python automatically adds the `scripts/` directory to the `PYTHONPATH` when invoking a script like this: `python scripts/some_script.py`.
+    - `utils.downloads`: I have taken this module, containing utilities to download files from URLs, from one of my past projects, https://github.com/plammens/alaquintavalavencida (this repository is private, contact me at 2475444L@student.gla.ac.uk or lammenspaolo@gmail.com to gain access).
 - `tests/`: Source root for test modules to be run with `pytest`.
 - `setup.py`: Contains project metadata such as dependencies and enables installation through `pip install`.
 

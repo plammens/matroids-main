@@ -1,7 +1,25 @@
+# Note: I have taken these utility functions from one of my past projects (summer 2021):
+#
+#           https://github.com/plammens/alaquintavalavencida
+#
+# (This is now a private repository, please email me at 2475444L@student.gla.ac.uk
+#  or lammenspaolo@gmail.com if you want to access it.)
+#
+# The original file is at:
+# https://github.com/plammens/alaquintavalavencida/blob/master/alaquintavalavencida/utils.py
+#
+# Signed:
+# Paolo Lammens
+# 30 Mar 2022
+#
+"""
+Utilities to download a file from a URL to a local file path.
+"""
+
 import pathlib
+import typing as tp
 import urllib.parse
 import urllib.request
-from typing import Union
 
 import tqdm
 
@@ -33,7 +51,7 @@ class DownloadTqdm(tqdm.tqdm):
         return super().__exit__(exc_type, exc_val, exc_tb)
 
 
-def extract_filename(url: Union[str, urllib.parse.ParseResult]):
+def extract_filename(url: tp.Union[str, urllib.parse.ParseResult]):
     if not isinstance(url, urllib.parse.ParseResult):
         url = urllib.parse.urlparse(url)
     return pathlib.PurePosixPath(url.path).name
@@ -42,6 +60,7 @@ def extract_filename(url: Union[str, urllib.parse.ParseResult]):
 def download(url: str, path=None) -> pathlib.Path:
     """
     Download the file at the given URL to the given local path.
+
     :param url: URL of the file to be downloaded.
     :param path: Local path to which to download the file. Default is cwd + filename.
     :return: The path to which the file was saved.
@@ -60,6 +79,7 @@ def download(url: str, path=None) -> pathlib.Path:
 def ensure_downloaded(url: str, path=None) -> pathlib.Path:
     """
     Download a file if it doesn't exist, otherwise do nothing.
+
     :param url: URL of file to be downloaded.
     :param path: Local path to use as cache for the file.
     :return: The path of the file that was downloaded or that was previously cached.
