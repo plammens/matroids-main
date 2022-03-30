@@ -37,6 +37,7 @@ this repository has been written and tested in CPython 3.9.0
   sudo apt install python3.9-dev
   ```
   See [here](https://stackoverflow.com/a/21530768/6117426) for instructions for other package managers.
+- **OS**: Tested on Windows 10 and Ubuntu in WSL.
 
 
 ### [Optional] Step 0: Activate a virtual Python environment
@@ -71,11 +72,22 @@ Alternatively one can specify, for example, `[tests,scripts]`, only `[tests]`, o
 The `-e` flag is optional; it makes the installation editable:
 i.e., the source files are used directly without first copying them to the default installation location.
 
+
+## Tests
+
+*Follow the [setup](#Setup) instructions first.*
+
+Tests are written using the `pytest` framework.
+To run automated tests, run the following from the repository root:
+```bash
+pytest tests
+```
+
 ## Running scripts
 
 *Follow the [setup](#setup) instructions first.*
 
-To run a script in the `scripts` directory, do the following from the repository root:
+To run a script in the `scripts` directory, run the following from the repository root:
 
 ```bash
 python -O scripts/some_script.py
@@ -83,16 +95,4 @@ python -O scripts/some_script.py
 
 (Replace `python` with `python3` in *nix as appropriate.) 
 The `-O` flag is to disable assertions (to get the most accurate performance measurements).
-
-
-## Tests
-
-*Follow the [setup](#Setup) instructions first.*
-
-Tests are written using the `pytest` framework.
-To run automated tests, do:
-```bash
-pytest tests
-```
-
 
