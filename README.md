@@ -1,8 +1,5 @@
  # Dynamic Maximal Independent Set on a Matroid
 
-This project aims to understand the complexity of finding a maximal independent set on a matroid when the underlying ground 
-set E undergoes changes, i.e., elements are either inserted or deleted from the ground set. 
-
 This repository provides a Python package named `matroids`, which contains 
 a framework for working abstractly with matroids in Python 
 and implementations of some static and dynamic maximal independent set algorithms. 
