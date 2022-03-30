@@ -1,9 +1,22 @@
-"""Utilities to access the Stanford Large Network Dataset Collection."""
+"""
+Utilities to access the Stanford Large Network Dataset Collection [1].
+
+
+References:
+-----------
+
+[1] J. Leskovec and A. Krevl.
+    SNAP Datasets: Stanford Large Network Dataset Collection, June 2014.
+    URL http://snap.stanford.edu/data .
+    [Last accessed: 2022-03-26].
+"""
+
 import pathlib
 import tarfile
 import typing as tp
 
 import networkx as nx
+
 from utils.download import ensure_downloaded
 
 
