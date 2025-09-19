@@ -2,7 +2,9 @@
 
 This repository provides a Python package named `matroids`, which contains 
 a framework for working abstractly with matroids in Python 
-and implementations of some static and dynamic maximal independent set algorithms. 
+and implementations of some static and dynamic maximal independent set algorithms.
+This is part of my final dissertation ["Dynamic Maximal Independent set on a Matroid"](https://drive.google.com/file/d/17netC1r6OunnUpRa95i36aa3pRhQYdjv/view?usp=sharing)
+for my BSc (Hons.) in Computing Science & Mathematics at the University of Glasgow.
 
 
 ## Repository structure
